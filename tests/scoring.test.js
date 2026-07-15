@@ -12,10 +12,21 @@ const {
   handoffTimingFor,
   liveRemaining,
   normalizeLoadedGame,
+  soundEventForDart,
   turnAnnouncementFor,
   turnHandoffFor,
   undo,
 } = require("../app.js");
+
+test("maps accepted dart transitions to semantic sound events", () => {
+  assert.equal(soundEventForDart({ area: "single" }, { lastEvent: "single" }), "single");
+  assert.equal(soundEventForDart({ area: "double" }, { lastEvent: "double" }), "double");
+  assert.equal(soundEventForDart({ area: "triple" }, { lastEvent: "triple" }), "triple");
+  assert.equal(soundEventForDart({ area: "outerBull" }, { lastEvent: "outerBull" }), "outerBull");
+  assert.equal(soundEventForDart({ area: "bullseye" }, { lastEvent: "bullseye" }), "bullseye");
+  assert.equal(soundEventForDart({ area: "triple" }, { lastEvent: "bust" }), "bust");
+  assert.equal(soundEventForDart({ area: "double" }, { lastEvent: "checkout" }), "checkout");
+});
 
 function setCurrentScore(game, score) {
   game.players[game.currentPlayerIndex].score = score;

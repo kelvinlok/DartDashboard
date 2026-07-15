@@ -36,6 +36,14 @@
       : null;
   }
 
+  function soundEventForDart(hit, nextGame) {
+    if (nextGame?.lastEvent === "bust") return "bust";
+    if (nextGame?.lastEvent === "checkout") return "checkout";
+    return ["single", "double", "triple", "outerBull", "bullseye"].includes(hit?.area)
+      ? hit.area
+      : null;
+  }
+
   function turnAnnouncementFor(name) {
     const player = String(name || "").trim();
     if (!player) return null;
@@ -319,6 +327,7 @@
     handoffTimingFor,
     liveRemaining,
     normalizeLoadedGame,
+    soundEventForDart,
     turnAnnouncementFor,
     turnHandoffFor,
     undo,
