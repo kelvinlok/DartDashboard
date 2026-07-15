@@ -264,7 +264,7 @@ input:focus {
   display: grid;
   grid-template-columns: minmax(230px, 290px) minmax(360px, 1fr) minmax(230px, 300px);
   gap: 18px;
-  align-items: stretch;
+  align-items: start;
 }
 
 .score-panel,
@@ -645,7 +645,7 @@ input:focus {
 }
 
 .is-handoff .board-stage {
-  cursor: wait;
+  cursor: default;
 }
 
 .scoreboard span,

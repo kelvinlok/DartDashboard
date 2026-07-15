@@ -5,6 +5,7 @@ const {
   createGame,
   applyDartHit,
   applyManualScore,
+  boardEffectClass,
   comicCalloutForArea,
   defaultPlayerName,
   formatPlace,
@@ -43,6 +44,18 @@ test("maps special dart beds to comic callouts", () => {
   assert.equal(comicCalloutForArea("bullseye"), "BULLSEYE!");
   assert.equal(comicCalloutForArea("bust"), "BUSTED!");
   assert.equal(comicCalloutForArea("single"), null);
+});
+
+test("restarts board animation only for visible board effects", () => {
+  assert.equal(boardEffectClass("double"), "hit-double");
+  assert.equal(boardEffectClass("triple"), "hit-triple");
+  assert.equal(boardEffectClass("outerBull"), "hit-outerBull");
+  assert.equal(boardEffectClass("bullseye"), "hit-bullseye");
+  assert.equal(boardEffectClass("bust"), "hit-bust");
+  assert.equal(boardEffectClass("checkout"), "hit-checkout");
+  assert.equal(boardEffectClass("single"), null);
+  assert.equal(boardEffectClass("score"), null);
+  assert.equal(boardEffectClass(null), null);
 });
 
 test("creates a 301 game with named players and selected out mode", () => {
@@ -285,6 +298,33 @@ test("undo restores the previous game state", () => {
   assert.equal(restored.players[0].score, 301);
   assert.equal(restored.currentPlayerIndex, 0);
   assert.equal(restored.history.length, 0);
+});
+
+test("undo retains only the latest score entry", () => {
+  let game = createGame(["Kelvin", "Ada"], "straight");
+  game = applyDartHit(game, { area: "single", value: 18 });
+  game = applyDartHit(game, { area: "single", value: 18 });
+
+  assert.equal(game.snapshots.length, 1);
+
+  const restored = undo(game);
+  assert.equal(restored.currentTurn.darts.length, 1);
+  assert.equal(restored.currentTurn.total, 18);
+  assert.equal(restored.snapshots.length, 0);
+  assert.deepEqual(undo(restored), restored);
+});
+
+test("normalizes old saves to the latest undo snapshot", () => {
+  const oldest = createGame(["Kelvin", "Ada"], "straight");
+  const latest = applyDartHit(oldest, { area: "single", value: 18 });
+  latest.snapshots = [];
+  const legacy = applyDartHit(latest, { area: "single", value: 18 });
+  legacy.snapshots = [oldest, latest];
+
+  const normalized = normalizeLoadedGame(legacy);
+
+  assert.equal(normalized.snapshots.length, 1);
+  assert.deepEqual(normalized.snapshots[0], latest);
 });
 
 test("normalizes legacy winner saves as completed matches", () => {

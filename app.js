@@ -28,6 +28,12 @@
     }[area] || null;
   }
 
+  function boardEffectClass(area) {
+    return ["double", "triple", "outerBull", "bullseye", "bust", "checkout"].includes(area)
+      ? `hit-${area}`
+      : null;
+  }
+
   function liveRemaining(game) {
     if (!game || !game.currentTurn) return 0;
     return Math.max(0, game.currentTurn.startScore - game.currentTurn.total);
@@ -77,7 +83,7 @@
   function pushSnapshot(game) {
     const snapshot = clone(game);
     snapshot.snapshots = [];
-    game.snapshots.push(snapshot);
+    game.snapshots = [snapshot];
   }
 
   function isDoubleFinish(hit) {
@@ -256,6 +262,10 @@
 
   function normalizeLoadedGame(game) {
     const normalized = clone(game);
+    normalized.snapshots = Array.isArray(normalized.snapshots)
+      ? normalized.snapshots.slice(-1)
+      : [];
+    if (normalized.snapshots[0]) normalized.snapshots[0].snapshots = [];
     if (Array.isArray(normalized.finishOrder)) return normalized;
 
     normalized.finishOrder = [];
@@ -283,6 +293,7 @@
     createGame,
     applyDartHit,
     applyManualScore,
+    boardEffectClass,
     comicCalloutForArea,
     defaultPlayerName,
     formatPlace,
@@ -492,6 +503,7 @@
 
   function flashBoard(area) {
     if (!els.board) return;
+    const effectClass = boardEffectClass(area);
     els.board.classList.remove(
       "hit-double",
       "hit-triple",
@@ -500,8 +512,9 @@
       "hit-bust",
       "hit-checkout",
     );
+    if (!effectClass) return;
     void els.board.offsetWidth;
-    if (area) els.board.classList.add(`hit-${area}`);
+    els.board.classList.add(effectClass);
   }
 
   function showComicCallout(area) {
