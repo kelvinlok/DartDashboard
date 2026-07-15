@@ -567,6 +567,183 @@ input:focus {
   animation: comic-word-slam 900ms cubic-bezier(0.18, 0.9, 0.2, 1.15) both;
 }
 
+.turn-announcement {
+  --turn-primary: var(--cyan);
+  --turn-secondary: var(--amber);
+  position: fixed;
+  inset: 0;
+  z-index: 52;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.turn-announcement[hidden] {
+  display: none;
+}
+
+.turn-announcement::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background: rgba(54, 216, 255, 0.2);
+  opacity: 0;
+}
+
+.turn-impact,
+.turn-impact::before,
+.turn-impact::after {
+  position: absolute;
+  width: min(900px, calc(100vw - 24px));
+  aspect-ratio: 2.15 / 1;
+  clip-path: polygon(
+    0 51%, 12% 43%, 3% 28%, 22% 33%, 15% 9%, 35% 27%, 44% 0,
+    52% 25%, 68% 5%, 65% 31%, 92% 17%, 79% 41%, 100% 50%, 80% 61%,
+    94% 84%, 69% 72%, 72% 100%, 53% 77%, 42% 98%, 37% 74%, 13% 91%,
+    22% 63%
+  );
+}
+
+.turn-impact {
+  z-index: -1;
+  background: var(--turn-secondary);
+  filter: drop-shadow(12px 14px 0 #050609);
+  opacity: 0;
+}
+
+.turn-impact::before,
+.turn-impact::after {
+  content: "";
+  inset: 0;
+  width: 100%;
+}
+
+.turn-impact::before {
+  background: var(--turn-primary);
+  transform: scale(0.8) rotate(-4deg);
+}
+
+.turn-impact::after {
+  background-image: radial-gradient(circle, #050609 0 2px, transparent 2.5px);
+  background-size: 12px 12px;
+  opacity: 0.26;
+  transform: scale(0.75) rotate(3deg);
+}
+
+.turn-copy {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 18px;
+  width: min(1040px, calc(100vw - 36px));
+  min-height: 230px;
+  transform: rotate(-2deg);
+}
+
+.turn-copy::before,
+.turn-copy::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 82px;
+  height: 10px;
+  background: #ffffff;
+  box-shadow: 0 22px 0 var(--turn-secondary), 0 -22px 0 var(--turn-primary);
+  opacity: 0;
+}
+
+.turn-copy::before {
+  left: -22px;
+  transform: rotate(11deg);
+}
+
+.turn-copy::after {
+  right: -22px;
+  transform: rotate(-11deg);
+}
+
+.turn-player,
+.turn-suffix {
+  align-self: center;
+  max-width: 100%;
+  font-family: Impact, Haettenschweiler, "Arial Black", sans-serif;
+  font-style: italic;
+  line-height: 0.82;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  paint-order: stroke fill;
+  opacity: 0;
+}
+
+.turn-player {
+  color: #ffffff;
+  font-size: 6rem;
+  -webkit-text-stroke: 7px #050609;
+  text-shadow: 7px 8px 0 var(--turn-primary), 13px 15px 0 #050609;
+}
+
+.turn-suffix {
+  color: var(--turn-secondary);
+  font-size: 4.5rem;
+  -webkit-text-stroke: 6px #050609;
+  text-shadow: 6px 7px 0 #ffffff, 11px 13px 0 #050609;
+}
+
+.turn-announcement.is-long .turn-copy {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+}
+
+.turn-announcement.is-long .turn-player {
+  font-size: 4.5rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.turn-announcement.is-long .turn-suffix {
+  font-size: 3.6rem;
+}
+
+.turn-announcement.is-very-long .turn-player {
+  font-size: 3rem;
+}
+
+.turn-announcement.is-very-long .turn-suffix {
+  font-size: 3rem;
+}
+
+.turn-announcement.is-active::before {
+  animation: turn-backdrop-flash 900ms ease-out both;
+}
+
+.turn-announcement.is-active .turn-impact {
+  animation: turn-impact-pop 900ms cubic-bezier(0.18, 0.88, 0.2, 1.12) both;
+}
+
+.turn-announcement.is-active .turn-copy {
+  animation: turn-copy-collision 900ms ease-out both;
+}
+
+.turn-announcement.is-active .turn-copy::before,
+.turn-announcement.is-active .turn-copy::after {
+  animation: turn-impact-lines 900ms ease-out both;
+}
+
+.turn-announcement.is-active .turn-player {
+  animation: turn-player-strike 900ms cubic-bezier(0.16, 0.88, 0.22, 1.08) both;
+}
+
+.turn-announcement.is-active .turn-suffix {
+  animation: turn-suffix-strike 900ms cubic-bezier(0.16, 0.88, 0.22, 1.08) both;
+}
+
 .hit-double::after,
 .hit-triple::after,
 .hit-outerBull::after,
@@ -803,6 +980,120 @@ input:focus {
   }
 }
 
+@keyframes turn-backdrop-flash {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  11% {
+    opacity: 1;
+  }
+  38% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes turn-impact-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.08) rotate(-15deg);
+  }
+  16% {
+    opacity: 1;
+    transform: scale(1.1) rotate(3deg);
+  }
+  28% {
+    transform: scale(0.97) rotate(-2deg);
+  }
+  72% {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3) rotate(5deg);
+  }
+}
+
+@keyframes turn-copy-collision {
+  0%,
+  18% {
+    transform: rotate(-2deg);
+  }
+  22% {
+    transform: translate(-8px, 3px) rotate(-3deg);
+  }
+  27% {
+    transform: translate(7px, -2px) rotate(-1deg);
+  }
+  32% {
+    transform: translate(-4px, 1px) rotate(-2deg);
+  }
+  38%,
+  74% {
+    opacity: 1;
+    transform: translate(0) rotate(-2deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(2deg) scale(1.22);
+  }
+}
+
+@keyframes turn-player-strike {
+  0% {
+    opacity: 0;
+    transform: translateX(-52vw) skewX(-14deg);
+  }
+  17% {
+    opacity: 1;
+    transform: translateX(16px) skewX(-4deg);
+  }
+  27%,
+  74% {
+    opacity: 1;
+    transform: translateX(0) skewX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-12px) scale(1.13);
+  }
+}
+
+@keyframes turn-suffix-strike {
+  0% {
+    opacity: 0;
+    transform: translateX(52vw) skewX(14deg);
+  }
+  17% {
+    opacity: 1;
+    transform: translateX(-16px) skewX(4deg);
+  }
+  27%,
+  74% {
+    opacity: 1;
+    transform: translateX(0) skewX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(12px) scale(1.13);
+  }
+}
+
+@keyframes turn-impact-lines {
+  0%,
+  13%,
+  100% {
+    opacity: 0;
+  }
+  21% {
+    opacity: 1;
+  }
+  38% {
+    opacity: 0.35;
+  }
+}
+
 @media (max-width: 1020px) {
   .setup-view {
     grid-template-columns: 1fr;
@@ -829,6 +1120,16 @@ input:focus {
 
   .dartboard {
     width: min(92vw, 620px);
+  }
+
+  .turn-player {
+    font-size: 4.7rem;
+    -webkit-text-stroke-width: 6px;
+  }
+
+  .turn-suffix {
+    font-size: 3.6rem;
+    -webkit-text-stroke-width: 5px;
   }
 }
 
@@ -1023,6 +1324,64 @@ input:focus {
   .comic-burst::after {
     aspect-ratio: 1.6 / 1;
   }
+
+  .turn-impact,
+  .turn-impact::before,
+  .turn-impact::after {
+    aspect-ratio: 1.45 / 1;
+  }
+
+  .turn-copy,
+  .turn-announcement.is-long .turn-copy {
+    display: grid;
+    align-content: center;
+    gap: 12px;
+    width: calc(100vw - 28px);
+    min-height: 250px;
+  }
+
+  .turn-copy::before,
+  .turn-copy::after {
+    width: 44px;
+    height: 6px;
+    box-shadow: 0 14px 0 var(--turn-secondary), 0 -14px 0 var(--turn-primary);
+  }
+
+  .turn-copy::before {
+    left: 3px;
+  }
+
+  .turn-copy::after {
+    right: 3px;
+  }
+
+  .turn-player {
+    font-size: 3.2rem;
+    -webkit-text-stroke-width: 4px;
+    text-shadow: 4px 5px 0 var(--turn-primary), 8px 9px 0 #050609;
+  }
+
+  .turn-suffix {
+    font-size: 2.5rem;
+    -webkit-text-stroke-width: 4px;
+    text-shadow: 4px 5px 0 #ffffff, 8px 9px 0 #050609;
+  }
+
+  .turn-announcement.is-long .turn-player {
+    font-size: 2.35rem;
+  }
+
+  .turn-announcement.is-long .turn-suffix {
+    font-size: 2.1rem;
+  }
+
+  .turn-announcement.is-very-long .turn-player {
+    font-size: 1.7rem;
+  }
+
+  .turn-announcement.is-very-long .turn-suffix {
+    font-size: 1.8rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1030,6 +1389,25 @@ input:focus {
   .comic-callout.is-active .comic-burst,
   .comic-callout.is-active .comic-word {
     animation: comic-fade 900ms ease both;
+  }
+
+  .turn-announcement.is-active::before,
+  .turn-announcement.is-active .turn-impact,
+  .turn-announcement.is-active .turn-copy {
+    animation: comic-fade 900ms ease both;
+  }
+
+  .turn-announcement.is-active .turn-player,
+  .turn-announcement.is-active .turn-suffix {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .turn-announcement.is-active .turn-copy::before,
+  .turn-announcement.is-active .turn-copy::after {
+    animation: none;
+    opacity: 0;
   }
 
   .dartboard-svg,

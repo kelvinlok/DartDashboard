@@ -9,8 +9,10 @@ const {
   comicCalloutForArea,
   defaultPlayerName,
   formatPlace,
+  handoffTimingFor,
   liveRemaining,
   normalizeLoadedGame,
+  turnAnnouncementFor,
   turnHandoffFor,
   undo,
 } = require("../app.js");
@@ -56,6 +58,33 @@ test("restarts board animation only for visible board effects", () => {
   assert.equal(boardEffectClass("single"), null);
   assert.equal(boardEffectClass("score"), null);
   assert.equal(boardEffectClass(null), null);
+});
+
+test("formats incoming player names for the turn announcement", () => {
+  assert.deepEqual(turnAnnouncementFor("Ada"), {
+    player: "ADA",
+    suffix: "'S TURN!",
+  });
+  assert.deepEqual(turnAnnouncementFor("James"), {
+    player: "JAMES",
+    suffix: "' TURN!",
+  });
+  assert.equal(turnAnnouncementFor("  "), null);
+});
+
+test("sequences incoming players after special comic effects", () => {
+  assert.deepEqual(handoffTimingFor("single"), {
+    announcementDelay: 0,
+    handoffDuration: 1000,
+  });
+  assert.deepEqual(handoffTimingFor("triple"), {
+    announcementDelay: 900,
+    handoffDuration: 1800,
+  });
+  assert.deepEqual(handoffTimingFor("bust"), {
+    announcementDelay: 900,
+    handoffDuration: 1800,
+  });
 });
 
 test("creates a 301 game with named players and selected out mode", () => {

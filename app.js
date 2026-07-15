@@ -1,6 +1,8 @@
 (function attachDartDashboard(root) {
   const STARTING_SCORE = 301;
   const STORAGE_KEY = "dart-dashboard-game";
+  const COMIC_DURATION = 900;
+  const HANDOFF_DURATION = 1000;
   const BOARD_NUMBERS = [
     20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5,
   ];
@@ -32,6 +34,23 @@
     return ["double", "triple", "outerBull", "bullseye", "bust", "checkout"].includes(area)
       ? `hit-${area}`
       : null;
+  }
+
+  function turnAnnouncementFor(name) {
+    const player = String(name || "").trim();
+    if (!player) return null;
+    return {
+      player: player.toUpperCase(),
+      suffix: player.toLowerCase().endsWith("s") ? "' TURN!" : "'S TURN!",
+    };
+  }
+
+  function handoffTimingFor(area) {
+    const announcementDelay = comicCalloutForArea(area) ? COMIC_DURATION : 0;
+    return {
+      announcementDelay,
+      handoffDuration: announcementDelay ? COMIC_DURATION * 2 : HANDOFF_DURATION,
+    };
   }
 
   function liveRemaining(game) {
@@ -297,8 +316,10 @@
     comicCalloutForArea,
     defaultPlayerName,
     formatPlace,
+    handoffTimingFor,
     liveRemaining,
     normalizeLoadedGame,
+    turnAnnouncementFor,
     turnHandoffFor,
     undo,
     scoreForHit,
@@ -349,6 +370,7 @@
     clearTimeout(state.handoffTimer);
     state.handoffTimer = null;
     state.turnHandoff = null;
+    hideTurnAnnouncement();
   }
 
   function setGame(game, options) {
@@ -360,11 +382,12 @@
 
     if (state.turnHandoff) {
       state.handoffTimer = setTimeout(() => {
+        hideTurnAnnouncement();
         state.turnHandoff = null;
         state.handoffTimer = null;
         render();
         pulseTurn(true);
-      }, 1000);
+      }, options?.handoffDuration || HANDOFF_DURATION);
     }
   }
 
@@ -542,6 +565,49 @@
     els.comicCallout.hidden = true;
   }
 
+  function showTurnAnnouncement(name, delay) {
+    const announcement = turnAnnouncementFor(name);
+    if (!announcement || !els.turnAnnouncement) return;
+
+    hideTurnAnnouncement();
+    const reveal = () => {
+      hideComicCallout();
+      els.turnPlayer.textContent = announcement.player;
+      els.turnSuffix.textContent = announcement.suffix;
+      els.turnAnnouncement.classList.toggle("is-long", announcement.player.length > 10);
+      els.turnAnnouncement.classList.toggle("is-very-long", announcement.player.length > 18);
+      els.turnAnnouncement.hidden = false;
+      els.turnAnnouncement.classList.remove("is-active");
+      void els.turnAnnouncement.offsetWidth;
+      els.turnAnnouncement.classList.add("is-active");
+      showTurnAnnouncement.hideTimer = setTimeout(hideTurnAnnouncement, COMIC_DURATION);
+    };
+
+    if (delay) {
+      showTurnAnnouncement.revealTimer = setTimeout(reveal, delay);
+    } else {
+      reveal();
+    }
+  }
+
+  function hideTurnAnnouncement() {
+    clearTimeout(showTurnAnnouncement.revealTimer);
+    clearTimeout(showTurnAnnouncement.hideTimer);
+    if (!els.turnAnnouncement) return;
+    els.turnAnnouncement.classList.remove("is-active", "is-long", "is-very-long");
+    els.turnAnnouncement.hidden = true;
+  }
+
+  function handoffPresentation(game, handoff, effectArea) {
+    if (!handoff || game.status !== "playing") return null;
+    const announcement = turnAnnouncementFor(currentPlayer(game).name);
+    if (!announcement) return null;
+    return {
+      ...announcement,
+      ...handoffTimingFor(effectArea),
+    };
+  }
+
   function renderSetupPlayers() {
     const rows = Array.from(els.playerRows.querySelectorAll(".player-row"));
     const names = rows.map((row) => row.querySelector("input").value);
@@ -700,9 +766,17 @@
       const next = applyDartHit(previous, hit);
       const handoff = turnHandoffFor(previous, next);
       const event = next.lastEvent === "bust" ? "bust" : next.lastEvent;
-      setGame(next, { handoff });
+      const calloutArea = event === "bust" ? "bust" : hit.area;
+      const presentation = handoffPresentation(next, handoff, calloutArea);
+      setGame(next, {
+        handoff,
+        handoffDuration: presentation?.handoffDuration,
+      });
       flashBoard(event === "checkout" ? "checkout" : event || hit.area);
-      showComicCallout(event === "bust" ? "bust" : hit.area);
+      showComicCallout(calloutArea);
+      if (presentation) {
+        showTurnAnnouncement(presentation.player, presentation.announcementDelay);
+      }
     } catch (error) {
       showToast(error.message);
     }
@@ -776,10 +850,18 @@
         const previous = state.game;
         const next = applyManualScore(previous, score, { confirmDoubleOut });
         const handoff = turnHandoffFor(previous, next);
+        const calloutArea = next.lastEvent === "bust" ? "bust" : null;
+        const presentation = handoffPresentation(next, handoff, calloutArea);
         els.manualScore.value = "";
-        setGame(next, { handoff });
+        setGame(next, {
+          handoff,
+          handoffDuration: presentation?.handoffDuration,
+        });
         flashBoard(next.lastEvent === "bust" ? "bust" : next.lastEvent);
-        if (next.lastEvent === "bust") showComicCallout("bust");
+        if (calloutArea) showComicCallout(calloutArea);
+        if (presentation) {
+          showTurnAnnouncement(presentation.player, presentation.announcementDelay);
+        }
       } catch (error) {
         showToast(error.message);
       }
@@ -834,6 +916,9 @@
       winnerBanner: $("#winner-banner"),
       comicCallout: $("#comic-callout"),
       comicCalloutWord: $("#comic-callout-word"),
+      turnAnnouncement: $("#turn-announcement"),
+      turnPlayer: $("#turn-player"),
+      turnSuffix: $("#turn-suffix"),
       toast: $("#toast"),
     });
 
