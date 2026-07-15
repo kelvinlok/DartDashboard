@@ -46,6 +46,28 @@
             <h1 id="current-player">Noob</h1>
           </div>
           <div class="header-actions">
+            <div class="audio-controls">
+              <button
+                id="sound-toggle"
+                type="button"
+                class="ghost-button sound-toggle"
+                aria-pressed="false"
+                aria-label="Mute sound"
+              >
+                Sound on
+              </button>
+              <label class="volume-control" for="sound-volume">
+                <span>Volume</span>
+                <input
+                  id="sound-volume"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value="0.8"
+                />
+              </label>
+            </div>
             <button id="undo-button" type="button" class="ghost-button">Undo</button>
             <button id="new-game" type="button" class="ghost-button">New</button>
           </div>

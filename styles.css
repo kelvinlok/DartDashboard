@@ -248,6 +248,45 @@ input:focus {
   line-height: 0.9;
 }
 
+.audio-controls,
+.volume-control {
+  display: flex;
+  align-items: center;
+}
+
+.audio-controls {
+  gap: 10px;
+  padding-right: 12px;
+  border-right: 1px solid var(--line);
+}
+
+.sound-toggle {
+  min-width: 96px;
+}
+
+.volume-control {
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.volume-control input {
+  width: 96px;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--cyan);
+  cursor: pointer;
+}
+
+.sound-toggle:focus-visible,
+.volume-control input:focus-visible {
+  outline: 3px solid rgba(54, 216, 255, 0.78);
+  outline-offset: 3px;
+}
+
 .winner-banner {
   border: 1px solid rgba(50, 240, 138, 0.4);
   border-radius: 8px;
@@ -1182,12 +1221,42 @@ input:focus {
   .header-actions {
     width: auto;
     flex: 0 0 auto;
-    gap: 6px;
+    gap: 4px;
   }
 
   .header-actions button {
     min-height: 36px;
     padding: 7px 10px;
+  }
+
+  .audio-controls {
+    gap: 4px;
+    padding-right: 4px;
+    border-right: 0;
+  }
+
+  .sound-toggle {
+    min-width: 68px;
+    min-height: 44px;
+  }
+
+  .volume-control {
+    position: relative;
+  }
+
+  .volume-control span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .volume-control input {
+    width: 60px;
+    min-height: 44px;
   }
 
   .winner-banner {
