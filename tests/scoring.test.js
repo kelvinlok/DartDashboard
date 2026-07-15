@@ -5,13 +5,16 @@ const {
   createGame,
   applyDartHit,
   applyManualScore,
+  audioControlPresentation,
   boardEffectClass,
   comicCalloutForArea,
   defaultPlayerName,
   formatPlace,
   handoffTimingFor,
   liveRemaining,
+  manualSoundEventForGame,
   normalizeLoadedGame,
+  shouldPlayTurnChange,
   soundEventForDart,
   turnAnnouncementFor,
   turnHandoffFor,
@@ -26,6 +29,34 @@ test("maps accepted dart transitions to semantic sound events", () => {
   assert.equal(soundEventForDart({ area: "bullseye" }, { lastEvent: "bullseye" }), "bullseye");
   assert.equal(soundEventForDart({ area: "triple" }, { lastEvent: "bust" }), "bust");
   assert.equal(soundEventForDart({ area: "double" }, { lastEvent: "checkout" }), "checkout");
+});
+
+test("maps only terminal manual scores to sound events", () => {
+  assert.equal(manualSoundEventForGame({ lastEvent: "bust" }), "bust");
+  assert.equal(manualSoundEventForGame({ lastEvent: "checkout" }), "checkout");
+  assert.equal(manualSoundEventForGame({ lastEvent: "score" }), null);
+  assert.equal(manualSoundEventForGame(null), null);
+});
+
+test("plays turn handoff audio only while the match continues", () => {
+  assert.equal(shouldPlayTurnChange({ status: "playing" }), true);
+  assert.equal(shouldPlayTurnChange({ status: "complete" }), false);
+  assert.equal(shouldPlayTurnChange(null), false);
+});
+
+test("presents saved audio settings accessibly", () => {
+  assert.deepEqual(audioControlPresentation({ muted: false, volume: 0.8 }), {
+    ariaPressed: "false",
+    label: "Mute sound",
+    text: "Sound on",
+    volume: "0.8",
+  });
+  assert.deepEqual(audioControlPresentation({ muted: true, volume: 0.35 }), {
+    ariaPressed: "true",
+    label: "Unmute sound",
+    text: "Sound off",
+    volume: "0.35",
+  });
 });
 
 function setCurrentScore(game, score) {

@@ -44,6 +44,24 @@
       : null;
   }
 
+  function manualSoundEventForGame(game) {
+    return ["bust", "checkout"].includes(game?.lastEvent) ? game.lastEvent : null;
+  }
+
+  function shouldPlayTurnChange(game) {
+    return game?.status === "playing";
+  }
+
+  function audioControlPresentation(settings) {
+    const muted = Boolean(settings?.muted);
+    return {
+      ariaPressed: String(muted),
+      label: muted ? "Unmute sound" : "Mute sound",
+      text: muted ? "Sound off" : "Sound on",
+      volume: String(settings?.volume ?? 0.8),
+    };
+  }
+
   function turnAnnouncementFor(name) {
     const player = String(name || "").trim();
     if (!player) return null;
@@ -320,13 +338,16 @@
     createGame,
     applyDartHit,
     applyManualScore,
+    audioControlPresentation,
     boardEffectClass,
     comicCalloutForArea,
     defaultPlayerName,
     formatPlace,
     handoffTimingFor,
     liveRemaining,
+    manualSoundEventForGame,
     normalizeLoadedGame,
+    shouldPlayTurnChange,
     soundEventForDart,
     turnAnnouncementFor,
     turnHandoffFor,
@@ -347,12 +368,63 @@
     selectedHit: null,
     turnHandoff: null,
     handoffTimer: null,
+    soundManager: null,
   };
 
   const els = {};
 
   function $(selector) {
     return document.querySelector(selector);
+  }
+
+  function playSound(name) {
+    if (!name || !state.soundManager) return false;
+    try {
+      return state.soundManager.play(name);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function renderAudioSettings() {
+    if (!state.soundManager) return;
+    try {
+      const presentation = audioControlPresentation(state.soundManager.getSettings());
+      els.soundToggle.setAttribute("aria-pressed", presentation.ariaPressed);
+      els.soundToggle.setAttribute("aria-label", presentation.label);
+      els.soundToggle.textContent = presentation.text;
+      els.soundVolume.value = presentation.volume;
+    } catch (error) {
+      // Audio settings must never interrupt gameplay.
+    }
+  }
+
+  function initializeAudio() {
+    els.soundToggle.disabled = true;
+    els.soundVolume.disabled = true;
+
+    try {
+      const SoundManager = root.DartAudio?.SoundManager;
+      if (!SoundManager) return;
+      const manager = new SoundManager();
+      if (!manager.context) return;
+
+      state.soundManager = manager;
+      els.soundToggle.disabled = false;
+      els.soundVolume.disabled = false;
+      renderAudioSettings();
+      void manager.load();
+
+      const unlockAudio = () => {
+        root.removeEventListener("pointerdown", unlockAudio);
+        root.removeEventListener("keydown", unlockAudio);
+        void manager.unlock();
+      };
+      root.addEventListener("pointerdown", unlockAudio, { once: true, passive: true });
+      root.addEventListener("keydown", unlockAudio, { once: true });
+    } catch (error) {
+      state.soundManager = null;
+    }
   }
 
   function saveGame() {
@@ -396,6 +468,7 @@
         state.handoffTimer = null;
         render();
         pulseTurn(true);
+        if (shouldPlayTurnChange(state.game)) playSound("turnChange");
       }, options?.handoffDuration || HANDOFF_DURATION);
     }
   }
@@ -773,6 +846,7 @@
     try {
       const previous = state.game;
       const next = applyDartHit(previous, hit);
+      const soundEvent = soundEventForDart(hit, next);
       const handoff = turnHandoffFor(previous, next);
       const event = next.lastEvent === "bust" ? "bust" : next.lastEvent;
       const calloutArea = event === "bust" ? "bust" : hit.area;
@@ -781,6 +855,7 @@
         handoff,
         handoffDuration: presentation?.handoffDuration,
       });
+      playSound(soundEvent);
       flashBoard(event === "checkout" ? "checkout" : event || hit.area);
       showComicCallout(calloutArea);
       if (presentation) {
@@ -858,6 +933,7 @@
       try {
         const previous = state.game;
         const next = applyManualScore(previous, score, { confirmDoubleOut });
+        const soundEvent = manualSoundEventForGame(next);
         const handoff = turnHandoffFor(previous, next);
         const calloutArea = next.lastEvent === "bust" ? "bust" : null;
         const presentation = handoffPresentation(next, handoff, calloutArea);
@@ -866,6 +942,7 @@
           handoff,
           handoffDuration: presentation?.handoffDuration,
         });
+        playSound(soundEvent);
         flashBoard(next.lastEvent === "bust" ? "bust" : next.lastEvent);
         if (calloutArea) showComicCallout(calloutArea);
         if (presentation) {
@@ -881,6 +958,19 @@
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       handleBoardAction(event.target);
+    });
+
+    els.soundToggle.addEventListener("click", () => {
+      if (!state.soundManager) return;
+      const settings = state.soundManager.getSettings();
+      state.soundManager.setMuted(!settings.muted);
+      renderAudioSettings();
+    });
+
+    els.soundVolume.addEventListener("input", () => {
+      if (!state.soundManager) return;
+      state.soundManager.setVolume(Number(els.soundVolume.value));
+      renderAudioSettings();
     });
 
     els.undoButton.addEventListener("click", () => {
@@ -920,6 +1010,8 @@
       manualForm: $("#manual-form"),
       manualScore: $("#manual-score"),
       manualSubmit: $("#manual-submit"),
+      soundToggle: $("#sound-toggle"),
+      soundVolume: $("#sound-volume"),
       undoButton: $("#undo-button"),
       newGame: $("#new-game"),
       winnerBanner: $("#winner-banner"),
@@ -931,6 +1023,7 @@
       toast: $("#toast"),
     });
 
+    initializeAudio();
     renderSetupPlayers();
     renderDartboard();
     bindEvents();
