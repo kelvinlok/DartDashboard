@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dart Dashboard 301</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="setup-view" class="setup-view" aria-labelledby="setup-title">
+        <div class="setup-copy">
+          <p class="eyebrow">301 match logger</p>
+          <h1 id="setup-title">Dart Dashboard</h1>
+          <p>Local 301 scoring with a live board, clean turns, and checkout drama.</p>
+        </div>
+
+        <form id="setup-form" class="setup-panel">
+          <div class="panel-heading">
+            <span>Players</span>
+            <button id="add-player" type="button" class="ghost-button">Add</button>
+          </div>
+
+          <div id="player-rows" class="player-rows"></div>
+
+          <fieldset class="out-mode">
+            <legend>Finish rule</legend>
+            <label>
+              <input type="radio" name="outMode" value="straight" checked />
+              <span>Straight out</span>
+            </label>
+            <label>
+              <input type="radio" name="outMode" value="double" />
+              <span>Double out</span>
+            </label>
+          </fieldset>
+
+          <button type="submit" class="primary-button">Start 301</button>
+        </form>
+      </section>
+
+      <section id="game-view" class="game-view" hidden>
+        <header class="match-header">
+          <div>
+            <p id="match-meta" class="eyebrow">301</p>
+            <h1 id="current-player">Noob</h1>
+          </div>
+          <div class="header-actions">
+            <button id="undo-button" type="button" class="ghost-button">Undo</button>
+            <button id="new-game" type="button" class="ghost-button">New</button>
+          </div>
+        </header>
+
+        <div id="winner-banner" class="winner-banner" hidden></div>
+
+        <div class="match-layout">
+          <aside class="score-panel" aria-label="Score status">
+            <div class="score-readout">
+              <span>Remaining</span>
+              <strong id="current-score">301</strong>
+              <small id="checkout-hint">Score down</small>
+            </div>
+
+            <div class="visit-panel">
+              <div>
+                <span>Visit</span>
+                <strong id="visit-total">0</strong>
+              </div>
+              <div>
+                <span>Darts</span>
+                <strong id="dart-count">0/3</strong>
+              </div>
+            </div>
+
+            <form id="manual-form" class="manual-form">
+              <label for="manual-score">Keyboard score</label>
+              <div>
+                <input
+                  id="manual-score"
+                  name="manualScore"
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputmode="numeric"
+                  placeholder="e.g. 85"
+                />
+                <button id="manual-submit" type="submit" class="primary-button">
+                  Log
+                </button>
+              </div>
+            </form>
+
+            <div class="current-darts">
+              <span>This visit</span>
+              <div id="visit-darts"></div>
+            </div>
+          </aside>
+
+          <section class="board-stage" aria-label="Dartboard scoring">
+            <div id="dartboard" class="dartboard"></div>
+          </section>
+
+          <aside class="side-panel" aria-label="Players and history">
+            <section>
+              <h2>Players</h2>
+              <ol id="scoreboard" class="scoreboard"></ol>
+            </section>
+            <section>
+              <h2>Turns</h2>
+              <ol id="history" class="history"></ol>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <div
+      id="comic-callout"
+      class="comic-callout"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      hidden
+    >
+      <span class="comic-burst" aria-hidden="true"></span>
+      <strong id="comic-callout-word" class="comic-word"></strong>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+    <script src="app.js"></script>
+  </body>
+</html>
