@@ -34,6 +34,7 @@
       this.masterGain = null;
       this.effectsGain = null;
       this.majorGain = null;
+      this.outputLimiter = null;
       this.buffers = new Map();
       this._majorSource = null;
       this._storage = options.storage || null;
@@ -71,9 +72,16 @@
         this.masterGain = this.context.createGain();
         this.effectsGain = this.context.createGain();
         this.majorGain = this.context.createGain();
+        this.outputLimiter = this.context.createDynamicsCompressor();
         this.effectsGain.connect(this.masterGain);
         this.majorGain.connect(this.masterGain);
-        this.masterGain.connect(this.context.destination);
+        this.masterGain.connect(this.outputLimiter);
+        this.outputLimiter.connect(this.context.destination);
+        this.outputLimiter.threshold.value = -3;
+        this.outputLimiter.knee.value = 0;
+        this.outputLimiter.ratio.value = 20;
+        this.outputLimiter.attack.value = 0.003;
+        this.outputLimiter.release.value = 0.1;
         this.effectsGain.gain.value = 1;
         this.majorGain.gain.value = 1;
         this._applyMasterVolume();
@@ -82,6 +90,7 @@
         this.masterGain = null;
         this.effectsGain = null;
         this.majorGain = null;
+        this.outputLimiter = null;
       }
     }
 
@@ -198,6 +207,7 @@
     }
 
     play(name) {
+      let restoreMajor = null;
       try {
         const buffer = this.buffers.get(name);
         if (!this.context || this.settings.muted || !buffer) return false;
@@ -218,21 +228,26 @@
             }
           }
 
-          const restore = () => {
+          restoreMajor = () => {
             if (this._majorSource !== source) return;
             this._majorSource = null;
             this._restoreEffects();
           };
-          source.onended = restore;
+          source.onended = restoreMajor;
           this._duckEffects();
-          if (this._setTimeout) {
-            this._setTimeout(restore, Math.round(buffer.duration * 1000));
-          }
         }
 
         source.start(0);
+        if (restoreMajor && this._setTimeout) {
+          this._setTimeout(restoreMajor, Math.round(buffer.duration * 1000));
+        }
         return true;
       } catch (error) {
+        try {
+          restoreMajor?.();
+        } catch (restoreError) {
+          // Playback and recovery failures are both harmless to gameplay.
+        }
         return false;
       }
     }

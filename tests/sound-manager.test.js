@@ -35,6 +35,7 @@ class FakeAudioContext {
     this.currentTime = 4;
     this.destination = { type: "destination" };
     this.gains = [];
+    this.compressors = [];
     this.sources = [];
     this.decoded = [];
     this.resumeCalls = 0;
@@ -49,6 +50,22 @@ class FakeAudioContext {
       },
     };
     this.gains.push(node);
+    return node;
+  }
+
+  createDynamicsCompressor() {
+    const node = {
+      threshold: new FakeAudioParam(),
+      knee: new FakeAudioParam(),
+      ratio: new FakeAudioParam(),
+      attack: new FakeAudioParam(),
+      release: new FakeAudioParam(),
+      connections: [],
+      connect(target) {
+        this.connections.push(target);
+      },
+    };
+    this.compressors.push(node);
     return node;
   }
 
@@ -84,6 +101,17 @@ class FakeAudioContext {
   }
 }
 
+class FailingStartAudioContext extends FakeAudioContext {
+  createBufferSource() {
+    const source = super.createBufferSource();
+    source.start = function startWithFailure() {
+      this.starts += 1;
+      throw new Error("playback failed");
+    };
+    return source;
+  }
+}
+
 function makeStorage(raw = null) {
   return {
     raw,
@@ -113,7 +141,7 @@ function makeHarness(options = {}) {
     };
   };
   const manager = new SoundManager({
-    AudioContextClass: FakeAudioContext,
+    AudioContextClass: options.AudioContextClass || FakeAudioContext,
     fetchImpl,
     storage,
     setTimeoutImpl(callback, delay) {
@@ -160,6 +188,18 @@ test("unlocks a suspended audio context", async () => {
   assert.equal(await manager.unlock(), true);
   assert.equal(manager.context.resumeCalls, 1);
   assert.equal(manager.context.state, "running");
+});
+
+test("routes the master bus through a protective output limiter", () => {
+  const { manager } = makeHarness();
+  const limiter = manager.context.compressors[0];
+
+  assert.ok(limiter);
+  assert.equal(manager.masterGain.connections[0], limiter);
+  assert.equal(limiter.connections[0], manager.context.destination);
+  assert.equal(limiter.threshold.value, -3);
+  assert.equal(limiter.knee.value, 0);
+  assert.equal(limiter.ratio.value, 20);
 });
 
 test("loads and decodes every available asset while absorbing individual failures", async () => {
@@ -219,4 +259,14 @@ test("ducks effects during major playback and restores them after its duration",
 
   timers[0].callback();
   assert.ok(effectsGain.events.some((event) => event[0] === "ramp" && event[1] === 1));
+});
+
+test("restores major playback state when a source cannot start", async () => {
+  const { manager, timers } = makeHarness({ AudioContextClass: FailingStartAudioContext });
+  await manager.load();
+
+  assert.equal(manager.play("bullseye"), false);
+  assert.equal(manager._majorSource, null);
+  assert.equal(manager.effectsGain.gain.value, 1);
+  assert.equal(timers.length, 0);
 });
