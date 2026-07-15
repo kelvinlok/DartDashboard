@@ -10,6 +10,7 @@ const {
   formatPlace,
   liveRemaining,
   normalizeLoadedGame,
+  turnHandoffFor,
   undo,
 } = require("../app.js");
 
@@ -40,6 +41,7 @@ test("maps special dart beds to comic callouts", () => {
   assert.equal(comicCalloutForArea("triple"), "TRIPLE!");
   assert.equal(comicCalloutForArea("outerBull"), "BULL!");
   assert.equal(comicCalloutForArea("bullseye"), "BULLSEYE!");
+  assert.equal(comicCalloutForArea("bust"), "BUSTED!");
   assert.equal(comicCalloutForArea("single"), null);
 });
 
@@ -66,6 +68,66 @@ test("projects the remaining score after every dart in a visit", () => {
   game = applyDartHit(game, { area: "single", value: 20 });
   assert.equal(liveRemaining(game), 221);
   assert.equal(game.players[0].score, 301);
+});
+
+test("creates no handoff until a dartboard visit is complete", () => {
+  let game = createGame(["Kelvin", "Ada"], "straight");
+  let previous = game;
+  game = applyDartHit(game, { area: "triple", value: 20 });
+  assert.equal(turnHandoffFor(previous, game), null);
+
+  previous = game;
+  game = applyDartHit(game, { area: "single", value: 20 });
+  assert.equal(turnHandoffFor(previous, game), null);
+});
+
+test("creates a handoff from a completed three-dart visit", () => {
+  let game = createGame(["Kelvin", "Ada"], "straight");
+  game = applyDartHit(game, { area: "triple", value: 20 });
+  game = applyDartHit(game, { area: "single", value: 20 });
+  const previous = game;
+
+  game = applyDartHit(game, { area: "double", value: 10 });
+  const handoff = turnHandoffFor(previous, game);
+
+  assert.equal(handoff.player, "Kelvin");
+  assert.equal(handoff.playerIndex, 0);
+  assert.equal(handoff.scoreAfter, 201);
+  assert.equal(handoff.total, 100);
+  assert.equal(handoff.darts.length, 3);
+  assert.equal(handoff.result, "score");
+});
+
+test("creates a handoff from a keyboard total", () => {
+  const previous = createGame(["Kelvin", "Ada"], "straight");
+  const game = applyManualScore(previous, 60);
+  const handoff = turnHandoffFor(previous, game);
+
+  assert.equal(handoff.input, "manual");
+  assert.equal(handoff.total, 60);
+  assert.equal(handoff.scoreAfter, 241);
+});
+
+test("creates a handoff that preserves a restored bust score", () => {
+  const previous = createGame(["Kelvin", "Ada"], "straight");
+  setCurrentScore(previous, 10);
+  const game = applyManualScore(previous, 12);
+  const handoff = turnHandoffFor(previous, game);
+
+  assert.equal(handoff.result, "bust");
+  assert.equal(handoff.total, 12);
+  assert.equal(handoff.scoreAfter, 10);
+});
+
+test("creates a handoff with checkout position", () => {
+  const previous = createGame(["Kelvin", "Ada"], "straight");
+  setCurrentScore(previous, 20);
+  const game = applyDartHit(previous, { area: "single", value: 20 });
+  const handoff = turnHandoffFor(previous, game);
+
+  assert.equal(handoff.result, "win");
+  assert.equal(handoff.scoreAfter, 0);
+  assert.equal(handoff.meta.place, 1);
 });
 
 test("records three dartboard hits as one completed visit and advances turn", () => {

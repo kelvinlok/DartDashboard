@@ -24,6 +24,7 @@
       triple: "TRIPLE!",
       outerBull: "BULL!",
       bullseye: "BULLSEYE!",
+      bust: "BUSTED!",
     }[area] || null;
   }
 
@@ -270,6 +271,12 @@
     return normalized;
   }
 
+  function turnHandoffFor(previousGame, nextGame) {
+    if (!previousGame || !nextGame) return null;
+    if (nextGame.history.length <= previousGame.history.length) return null;
+    return clone(nextGame.history[0]);
+  }
+
   const api = {
     STARTING_SCORE,
     BOARD_NUMBERS,
@@ -281,6 +288,7 @@
     formatPlace,
     liveRemaining,
     normalizeLoadedGame,
+    turnHandoffFor,
     undo,
     scoreForHit,
   };
@@ -296,6 +304,8 @@
   const state = {
     game: null,
     selectedHit: null,
+    turnHandoff: null,
+    handoffTimer: null,
   };
 
   const els = {};
@@ -324,10 +334,27 @@
     return null;
   }
 
-  function setGame(game) {
+  function clearTurnHandoff() {
+    clearTimeout(state.handoffTimer);
+    state.handoffTimer = null;
+    state.turnHandoff = null;
+  }
+
+  function setGame(game, options) {
+    clearTurnHandoff();
     state.game = game;
+    state.turnHandoff = options?.handoff || null;
     saveGame();
     render();
+
+    if (state.turnHandoff) {
+      state.handoffTimer = setTimeout(() => {
+        state.turnHandoff = null;
+        state.handoffTimer = null;
+        render();
+        pulseTurn(true);
+      }, 1000);
+    }
   }
 
   function formatOutMode(mode) {
@@ -532,30 +559,43 @@
 
   function renderGame() {
     const game = state.game;
-    const playing = game && game.status === "playing";
+    const handoff = state.turnHandoff;
+    const playing = game && game.status === "playing" && !handoff;
 
     document.body.classList.toggle("is-playing", Boolean(game));
     els.setupView.hidden = Boolean(game);
     els.gameView.hidden = !game;
+    els.gameView.classList.toggle("is-handoff", Boolean(handoff));
 
     if (!game) return;
 
-    const player = currentPlayer(game);
+    const displayPlayerIndex = handoff?.playerIndex ?? game.currentPlayerIndex;
+    const player = game.players[displayPlayerIndex];
     const finishOrder = game.finishOrder || [];
-    const displayScore = liveRemaining(game);
+    const displayScore = handoff ? handoff.scoreAfter : liveRemaining(game);
+    const displayedDarts = handoff ? handoff.darts : game.currentTurn.darts;
+    const displayedTotal = handoff ? handoff.total : game.currentTurn.total;
     const matchComplete = game.status === "complete";
     const allCheckedOut = finishOrder.length === game.players.length;
     els.matchMeta.textContent = `${formatOutMode(game.outMode)} - 301`;
-    els.currentPlayer.textContent = matchComplete ? "Match complete" : player.name;
+    els.currentPlayer.textContent = matchComplete && !handoff ? "Match complete" : player.name;
     els.currentScore.textContent = displayScore;
-    els.visitTotal.textContent = game.currentTurn.total;
-    els.dartCount.textContent = `${game.currentTurn.darts.length}/3`;
-    els.checkoutHint.textContent = matchComplete
-      ? "Final standings"
-      : checkoutHint(displayScore, game.outMode);
+    els.visitTotal.textContent = displayedTotal;
+    els.dartCount.textContent = handoff?.input === "manual"
+      ? "Total"
+      : `${displayedDarts.length}/3`;
+    els.checkoutHint.textContent = handoff
+      ? handoff.result === "bust"
+        ? "Score restored"
+        : handoff.result === "win"
+          ? `Checked out ${formatPlace(handoff.meta.place)}`
+          : `${handoff.total} scored`
+      : matchComplete
+        ? "Final standings"
+        : checkoutHint(displayScore, game.outMode);
     els.manualScore.disabled = !playing;
     els.manualSubmit.disabled = !playing;
-    els.undoButton.disabled = !game.snapshots.length;
+    els.undoButton.disabled = !game.snapshots.length || Boolean(handoff);
 
     els.scoreboard.innerHTML = "";
     game.players.forEach((item, index) => {
@@ -563,10 +603,13 @@
       const finishIndex = finishOrder.indexOf(index);
       const finished = finishIndex !== -1;
       const active = playing && index === game.currentPlayerIndex;
-      row.className = finished ? "finished" : active ? "active" : "";
+      const handingOff = Boolean(handoff) && index === displayPlayerIndex;
+      row.className = [finished && "finished", active && "active", handingOff && "handoff"]
+        .filter(Boolean)
+        .join(" ");
       const score = finished
         ? formatPlace(finishIndex + 1)
-        : active
+        : handingOff || active
           ? displayScore
           : item.score;
       row.innerHTML = `
@@ -577,7 +620,7 @@
     });
 
     els.visitDarts.innerHTML = "";
-    game.currentTurn.darts.forEach((dart) => {
+    displayedDarts.forEach((dart) => {
       const chip = document.createElement("span");
       chip.className = `dart-chip ${dart.area}`;
       chip.textContent = dartLabel(dart);
@@ -630,7 +673,7 @@
   }
 
   function handleBoardAction(target) {
-    if (!state.game || state.game.status !== "playing") return;
+    if (!state.game || state.game.status !== "playing" || state.turnHandoff) return;
     const segment = target.closest(".segment");
     if (!segment) return;
 
@@ -640,13 +683,13 @@
     };
 
     try {
-      const before = state.game.currentPlayerIndex;
-      const next = applyDartHit(state.game, hit);
+      const previous = state.game;
+      const next = applyDartHit(previous, hit);
+      const handoff = turnHandoffFor(previous, next);
       const event = next.lastEvent === "bust" ? "bust" : next.lastEvent;
-      setGame(next);
+      setGame(next, { handoff });
       flashBoard(event === "checkout" ? "checkout" : event || hit.area);
-      showComicCallout(hit.area);
-      pulseTurn(before !== next.currentPlayerIndex || next.status === "complete");
+      showComicCallout(event === "bust" ? "bust" : hit.area);
     } catch (error) {
       showToast(error.message);
     }
@@ -700,7 +743,7 @@
 
     els.manualForm.addEventListener("submit", (event) => {
       event.preventDefault();
-      if (!state.game || state.game.status !== "playing") return;
+      if (!state.game || state.game.status !== "playing" || state.turnHandoff) return;
       hideComicCallout();
       const score = Number.parseInt(els.manualScore.value, 10);
       const playerScore = currentPlayer(state.game).score;
@@ -717,12 +760,13 @@
       }
 
       try {
-        const before = state.game.currentPlayerIndex;
-        const next = applyManualScore(state.game, score, { confirmDoubleOut });
+        const previous = state.game;
+        const next = applyManualScore(previous, score, { confirmDoubleOut });
+        const handoff = turnHandoffFor(previous, next);
         els.manualScore.value = "";
-        setGame(next);
+        setGame(next, { handoff });
         flashBoard(next.lastEvent === "bust" ? "bust" : next.lastEvent);
-        pulseTurn(before !== next.currentPlayerIndex || next.status === "complete");
+        if (next.lastEvent === "bust") showComicCallout("bust");
       } catch (error) {
         showToast(error.message);
       }
@@ -744,6 +788,7 @@
 
     els.newGame.addEventListener("click", () => {
       if (state.game && !window.confirm("Start a new game?")) return;
+      clearTurnHandoff();
       hideComicCallout();
       state.game = null;
       saveGame();
