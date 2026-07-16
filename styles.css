@@ -456,12 +456,12 @@ input:focus {
 
 .single.even,
 .singleOuter.even {
-  fill: #e8dec8;
+  fill: #171a1c;
 }
 
 .single.odd,
 .singleOuter.odd {
-  fill: #171a1c;
+  fill: #e8dec8;
 }
 
 .double.even,
