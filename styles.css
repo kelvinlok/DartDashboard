@@ -424,6 +424,7 @@ input:focus {
   width: 100%;
   min-width: 0;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
   gap: 10px;
   padding: 10px 14px 14px;
@@ -446,6 +447,7 @@ input:focus {
 .dartboard {
   position: relative;
   width: min(86vmin, 690px);
+  max-width: 100%;
   aspect-ratio: 1;
   filter: drop-shadow(0 26px 40px rgba(0, 0, 0, 0.42));
 }

@@ -19,7 +19,14 @@ test("provides an explicit miss button below the dartboard", () => {
 });
 
 test("allows the board stack to shrink within the board stage", () => {
-  assert.match(css, /\.board-stack\s*{[^}]*\bmin-width:\s*0;/);
+  assert.match(
+    css,
+    /\.board-stack\s*{[^}]*\bmin-width:\s*0;[^}]*\bgrid-template-columns:\s*minmax\(0,\s*1fr\);/,
+  );
+  assert.match(
+    css,
+    /\.dartboard\s*{[^}]*\bwidth:\s*min\(86vmin,\s*690px\);[^}]*\bmax-width:\s*100%;/,
+  );
   assert.match(
     css,
     /@media \(max-width: 1020px\)[\s\S]*?\.dartboard\s*{[^}]*\bwidth:\s*min\(100%,\s*620px\);/,
