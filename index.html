@@ -119,7 +119,18 @@
           </aside>
 
           <section class="board-stage" aria-label="Dartboard scoring">
-            <div id="dartboard" class="dartboard"></div>
+            <div class="board-stack">
+              <div id="dartboard" class="dartboard"></div>
+              <button
+                id="miss-button"
+                type="button"
+                class="ghost-button miss-button"
+                aria-label="Record missed dart for zero points"
+              >
+                <strong>Miss</strong>
+                <span>0 points</span>
+              </button>
+            </div>
           </section>
 
           <aside class="side-panel" aria-label="Players and history">

@@ -769,6 +769,7 @@
         : checkoutHint(displayScore, game.outMode);
     els.manualScore.disabled = !playing;
     els.manualSubmit.disabled = !playing;
+    els.missButton.disabled = !playing;
     els.undoButton.disabled = !game.snapshots.length || Boolean(handoff);
 
     els.scoreboard.innerHTML = "";
@@ -856,6 +857,12 @@
       area: segment.dataset.area,
       value: Number(segment.dataset.value),
     };
+
+    recordDartHit(hit);
+  }
+
+  function recordDartHit(hit) {
+    if (!state.game || state.game.status !== "playing" || state.turnHandoff) return;
 
     try {
       const previous = state.game;
@@ -973,6 +980,9 @@
       event.preventDefault();
       handleBoardAction(event.target);
     });
+    els.missButton.addEventListener("click", () => {
+      recordDartHit({ area: "miss", value: 0 });
+    });
 
     els.soundToggle.addEventListener("click", () => {
       if (!state.soundManager) return;
@@ -1012,6 +1022,7 @@
       playerRows: $("#player-rows"),
       addPlayer: $("#add-player"),
       board: $("#dartboard"),
+      missButton: $("#miss-button"),
       matchMeta: $("#match-meta"),
       currentPlayer: $("#current-player"),
       currentScore: $("#current-score"),
