@@ -130,15 +130,14 @@
   }
 
   function flatSnapshot(game) {
-    const snapshot = clone(game);
-    snapshot.snapshots = [];
-    return snapshot;
+    const { snapshots: _snapshots, ...state } = game;
+    return { ...clone(state), snapshots: [] };
   }
 
   function pushSnapshot(game) {
     const limit = undoHistoryLimit(game);
     const snapshots = Array.isArray(game.snapshots)
-      ? game.snapshots.map(flatSnapshot)
+      ? [...game.snapshots]
       : [];
     snapshots.push(flatSnapshot(game));
     game.snapshots = limit > 0 ? snapshots.slice(-limit) : [];
