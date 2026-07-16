@@ -422,6 +422,7 @@ input:focus {
 
 .board-stack {
   width: 100%;
+  min-width: 0;
   display: grid;
   justify-items: center;
   gap: 10px;
@@ -1186,7 +1187,7 @@ input:focus {
   }
 
   .dartboard {
-    width: min(92vw, 620px);
+    width: min(100%, 620px);
   }
 
   .turn-player {
