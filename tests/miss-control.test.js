@@ -32,3 +32,10 @@ test("allows the board stack to shrink within the board stage", () => {
     /@media \(max-width: 1020px\)[\s\S]*?\.dartboard\s*{[^}]*\bwidth:\s*min\(100%,\s*620px\);/,
   );
 });
+
+test("constrains the game grid to the available viewport width", () => {
+  assert.match(
+    css,
+    /\.game-view\s*{[^}]*\bdisplay:\s*grid;[^}]*\bgrid-template-columns:\s*minmax\(0,\s*1fr\);/,
+  );
+});
