@@ -371,31 +371,62 @@ test("undo restores the previous game state", () => {
   assert.equal(restored.history.length, 0);
 });
 
-test("undo retains only the latest score entry", () => {
+test("retains six undo actions for a two-player game", () => {
   let game = createGame(["Kelvin", "Ada"], "straight");
-  game = applyDartHit(game, { area: "single", value: 18 });
-  game = applyDartHit(game, { area: "single", value: 18 });
 
-  assert.equal(game.snapshots.length, 1);
+  for (let index = 0; index < 7; index += 1) {
+    game = applyDartHit(game, { area: "miss", value: 0 });
+  }
 
-  const restored = undo(game);
-  assert.equal(restored.currentTurn.darts.length, 1);
-  assert.equal(restored.currentTurn.total, 18);
-  assert.equal(restored.snapshots.length, 0);
-  assert.deepEqual(undo(restored), restored);
+  assert.equal(game.snapshots.length, 6);
+  assert.ok(game.snapshots.every((snapshot) => snapshot.snapshots.length === 0));
+
+  for (let index = 0; index < 6; index += 1) game = undo(game);
+  assert.equal(game.currentPlayerIndex, 0);
+  assert.equal(game.currentTurn.darts.length, 1);
+  assert.equal(game.snapshots.length, 0);
+  assert.deepEqual(undo(game), game);
 });
 
-test("normalizes old saves to the latest undo snapshot", () => {
-  const oldest = createGame(["Kelvin", "Ada"], "straight");
-  const latest = applyDartHit(oldest, { area: "single", value: 18 });
-  latest.snapshots = [];
-  const legacy = applyDartHit(latest, { area: "single", value: 18 });
-  legacy.snapshots = [oldest, latest];
+test("retains nine undo actions for a three-player game", () => {
+  let game = createGame(["Kelvin", "Ada", "Grace"], "straight");
 
-  const normalized = normalizeLoadedGame(legacy);
+  for (let index = 0; index < 10; index += 1) {
+    game = applyDartHit(game, { area: "miss", value: 0 });
+  }
 
-  assert.equal(normalized.snapshots.length, 1);
-  assert.deepEqual(normalized.snapshots[0], latest);
+  assert.equal(game.snapshots.length, 9);
+});
+
+test("stores each keyboard total as one undo action", () => {
+  let game = createGame(["Kelvin", "Ada"], "straight");
+  game = applyManualScore(game, 60);
+  game = applyManualScore(game, 45);
+
+  assert.equal(game.snapshots.length, 2);
+  game = undo(game);
+  assert.equal(game.players[0].score, 241);
+  assert.equal(game.players[1].score, 301);
+  assert.equal(game.currentPlayerIndex, 1);
+});
+
+test("normalizes saved undo history to a flat one-round window", () => {
+  const game = createGame(["Kelvin", "Ada", "Grace"], "straight");
+  const snapshots = [];
+
+  for (let index = 0; index < 12; index += 1) {
+    const snapshot = structuredClone(game);
+    snapshot.lastEvent = `legacy-${index}`;
+    snapshot.snapshots = [structuredClone(game)];
+    snapshots.push(snapshot);
+  }
+
+  game.snapshots = snapshots;
+  const normalized = normalizeLoadedGame(game);
+
+  assert.equal(normalized.snapshots.length, 9);
+  assert.equal(normalized.snapshots[0].lastEvent, "legacy-3");
+  assert.ok(normalized.snapshots.every((snapshot) => snapshot.snapshots.length === 0));
 });
 
 test("normalizes legacy winner saves as completed matches", () => {

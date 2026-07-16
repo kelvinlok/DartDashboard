@@ -125,10 +125,23 @@
     return game.players[game.currentPlayerIndex];
   }
 
-  function pushSnapshot(game) {
+  function undoHistoryLimit(game) {
+    return Array.isArray(game?.players) ? game.players.length * 3 : 0;
+  }
+
+  function flatSnapshot(game) {
     const snapshot = clone(game);
     snapshot.snapshots = [];
-    game.snapshots = [snapshot];
+    return snapshot;
+  }
+
+  function pushSnapshot(game) {
+    const limit = undoHistoryLimit(game);
+    const snapshots = Array.isArray(game.snapshots)
+      ? game.snapshots.map(flatSnapshot)
+      : [];
+    snapshots.push(flatSnapshot(game));
+    game.snapshots = limit > 0 ? snapshots.slice(-limit) : [];
   }
 
   function isDoubleFinish(hit) {
@@ -307,10 +320,10 @@
 
   function normalizeLoadedGame(game) {
     const normalized = clone(game);
-    normalized.snapshots = Array.isArray(normalized.snapshots)
-      ? normalized.snapshots.slice(-1)
+    const limit = undoHistoryLimit(normalized);
+    normalized.snapshots = Array.isArray(normalized.snapshots) && limit > 0
+      ? normalized.snapshots.slice(-limit).map(flatSnapshot)
       : [];
-    if (normalized.snapshots[0]) normalized.snapshots[0].snapshots = [];
     if (Array.isArray(normalized.finishOrder)) return normalized;
 
     normalized.finishOrder = [];
