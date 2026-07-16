@@ -126,14 +126,68 @@ h1 {
   gap: 10px;
 }
 
-.player-row {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) 36px;
-  align-items: center;
-  gap: 8px;
+.player-order-hint {
+  margin: -8px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
-.player-row span,
+.player-row {
+  display: grid;
+  grid-template-columns: 32px 38px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  transition:
+    background-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.player-row.is-dragging {
+  z-index: 2;
+  background: rgba(54, 216, 255, 0.08);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  transform: scale(1.015);
+}
+
+.drag-handle {
+  display: grid;
+  width: 32px;
+  min-height: 42px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  cursor: grab;
+  font-size: 1.25rem;
+  line-height: 1;
+  touch-action: none;
+}
+
+.drag-handle:hover,
+.drag-handle:focus-visible {
+  background: #171d27;
+  color: var(--cyan);
+  outline: none;
+}
+
+.drag-handle:focus-visible {
+  box-shadow: 0 0 0 2px var(--cyan);
+}
+
+.player-row.is-dragging .drag-handle {
+  cursor: grabbing;
+  color: var(--cyan);
+}
+
+.player-rows.is-sorting {
+  user-select: none;
+}
+
+.player-position,
 .score-readout span,
 .visit-panel span,
 .current-darts > span,
@@ -159,6 +213,18 @@ input[type="number"] {
 input:focus {
   border-color: var(--cyan);
   box-shadow: 0 0 0 3px rgba(54, 216, 255, 0.15);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .out-mode {
@@ -1167,8 +1233,13 @@ input:focus {
 
 @media (max-width: 1020px) {
   .setup-view {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     align-content: center;
+  }
+
+  .setup-copy,
+  .setup-panel {
+    min-width: 0;
   }
 
   .match-layout {
@@ -1211,6 +1282,10 @@ input:focus {
 
   h1 {
     font-size: clamp(3.1rem, 18vw, 4.8rem);
+  }
+
+  .setup-copy h1 {
+    font-size: clamp(3.1rem, 16vw, 4.8rem);
   }
 
   .game-view {
@@ -1496,6 +1571,10 @@ input:focus {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .player-row {
+    transition: none;
+  }
+
   .comic-callout.is-active::before,
   .comic-callout.is-active .comic-burst,
   .comic-callout.is-active .comic-word {

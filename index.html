@@ -21,7 +21,16 @@
             <button id="add-player" type="button" class="ghost-button">Add</button>
           </div>
 
-          <div id="player-rows" class="player-rows"></div>
+          <p id="player-order-hint" class="player-order-hint">
+            Drag to set the throw order. First player throws first.
+          </p>
+          <div
+            id="player-rows"
+            class="player-rows"
+            role="list"
+            aria-describedby="player-order-hint"
+          ></div>
+          <p id="player-order-status" class="visually-hidden" aria-live="polite"></p>
 
           <fieldset class="out-mode">
             <legend>Finish rule</legend>

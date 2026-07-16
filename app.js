@@ -382,6 +382,7 @@
     turnHandoff: null,
     handoffTimer: null,
     soundManager: null,
+    setupDrag: null,
   };
 
   const els = {};
@@ -713,14 +714,112 @@
   }
 
   function addPlayerRow(value) {
-    const row = document.createElement("label");
+    const row = document.createElement("div");
     row.className = "player-row";
+    row.setAttribute("role", "listitem");
     row.innerHTML = `
-      <span>P${els.playerRows.children.length + 1}</span>
-      <input type="text" value="${escapeHtml(value)}" maxlength="18" />
+      <button type="button" class="drag-handle" draggable="true">
+        <span aria-hidden="true">⠿</span>
+      </button>
+      <span class="player-position"></span>
+      <input type="text" value="${escapeHtml(value)}" maxlength="18" draggable="false" />
       <button type="button" class="icon-button remove-player" aria-label="Remove player">x</button>
     `;
     els.playerRows.appendChild(row);
+    updatePlayerPositions();
+  }
+
+  function setupPlayerRows() {
+    return Array.from(els.playerRows.querySelectorAll(".player-row"));
+  }
+
+  function updatePlayerPositions(announceRow) {
+    setupPlayerRows().forEach((row, index) => {
+      const position = index + 1;
+      row.querySelector(".player-position").textContent = `P${position}`;
+      row.querySelector("input").setAttribute("aria-label", `Player ${position} name`);
+      row
+        .querySelector(".drag-handle")
+        .setAttribute("aria-label", `Move player ${position}. Drag, or use arrow keys.`);
+    });
+
+    if (!announceRow || !els.playerOrderStatus) return;
+    const position = setupPlayerRows().indexOf(announceRow) + 1;
+    const name = announceRow.querySelector("input").value.trim() || `Player ${position}`;
+    els.playerOrderStatus.textContent = `${name} moved to position ${position}.`;
+  }
+
+  function animatePlayerReflow(previousPositions, draggedRow) {
+    if (root.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    setupPlayerRows().forEach((row) => {
+      if (row === draggedRow || typeof row.animate !== "function") return;
+      const previousTop = previousPositions.get(row);
+      if (previousTop === undefined) return;
+      const distance = previousTop - row.getBoundingClientRect().top;
+      if (!distance) return;
+      row.animate(
+        [{ transform: `translateY(${distance}px)` }, { transform: "translateY(0)" }],
+        { duration: 170, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
+      );
+    });
+  }
+
+  function placePlayerRow(row, beforeRow) {
+    const rows = setupPlayerRows();
+    const oldIndex = rows.indexOf(row);
+    const previousPositions = new Map(
+      rows.map((item) => [item, item.getBoundingClientRect().top]),
+    );
+
+    if (beforeRow) els.playerRows.insertBefore(row, beforeRow);
+    else els.playerRows.appendChild(row);
+
+    const changed = setupPlayerRows().indexOf(row) !== oldIndex;
+    if (changed) {
+      if (state.setupDrag) state.setupDrag.moved = true;
+      updatePlayerPositions();
+      animatePlayerReflow(previousPositions, row);
+    }
+    return changed;
+  }
+
+  function placePlayerRowAt(row, targetIndex) {
+    const rows = setupPlayerRows();
+    const otherRows = rows.filter((item) => item !== row);
+    const boundedIndex = Math.max(0, Math.min(targetIndex, otherRows.length));
+    return placePlayerRow(row, otherRows[boundedIndex] || null);
+  }
+
+  function placeDraggedPlayer(clientY) {
+    if (!state.setupDrag?.row) return;
+    const row = state.setupDrag.row;
+    const beforeRow = setupPlayerRows()
+      .filter((item) => item !== row)
+      .find((item) => {
+        const bounds = item.getBoundingClientRect();
+        return clientY < bounds.top + bounds.height / 2;
+      });
+    placePlayerRow(row, beforeRow || null);
+  }
+
+  function startSetupDrag(row, mode, pointerId) {
+    state.setupDrag = {
+      row,
+      mode,
+      pointerId,
+      moved: false,
+    };
+    row.classList.add("is-dragging");
+    els.playerRows.classList.add("is-sorting");
+  }
+
+  function finishSetupDrag() {
+    if (!state.setupDrag) return;
+    const { row, moved } = state.setupDrag;
+    row.classList.remove("is-dragging");
+    els.playerRows.classList.remove("is-sorting");
+    state.setupDrag = null;
+    updatePlayerPositions(moved ? row : null);
   }
 
   function escapeHtml(value) {
@@ -915,6 +1014,83 @@
         return;
       }
       button.closest(".player-row").remove();
+      updatePlayerPositions();
+    });
+
+    els.playerRows.addEventListener("dragstart", (event) => {
+      const handle = event.target.closest(".drag-handle");
+      if (!handle) {
+        event.preventDefault();
+        return;
+      }
+      const row = handle.closest(".player-row");
+      startSetupDrag(row, "native");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", row.querySelector("input").value);
+      event.dataTransfer.setDragImage(row, 18, row.offsetHeight / 2);
+    });
+
+    els.playerRows.addEventListener("dragover", (event) => {
+      if (state.setupDrag?.mode !== "native") return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      placeDraggedPlayer(event.clientY);
+    });
+
+    els.playerRows.addEventListener("drop", (event) => {
+      if (state.setupDrag?.mode !== "native") return;
+      event.preventDefault();
+      finishSetupDrag();
+    });
+
+    els.playerRows.addEventListener("dragend", finishSetupDrag);
+
+    els.playerRows.addEventListener("pointerdown", (event) => {
+      const handle = event.target.closest(".drag-handle");
+      if (!handle || event.pointerType === "mouse" || event.button !== 0) return;
+      event.preventDefault();
+      startSetupDrag(handle.closest(".player-row"), "pointer", event.pointerId);
+      handle.setPointerCapture(event.pointerId);
+    });
+
+    els.playerRows.addEventListener("pointermove", (event) => {
+      if (
+        state.setupDrag?.mode !== "pointer" ||
+        state.setupDrag.pointerId !== event.pointerId
+      ) return;
+      event.preventDefault();
+      placeDraggedPlayer(event.clientY);
+    });
+
+    const finishPointerDrag = (event) => {
+      if (
+        state.setupDrag?.mode !== "pointer" ||
+        state.setupDrag.pointerId !== event.pointerId
+      ) return;
+      finishSetupDrag();
+    };
+    els.playerRows.addEventListener("pointerup", finishPointerDrag);
+    els.playerRows.addEventListener("pointercancel", finishPointerDrag);
+
+    els.playerRows.addEventListener("keydown", (event) => {
+      const handle = event.target.closest(".drag-handle");
+      if (!handle || !["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) {
+        return;
+      }
+
+      event.preventDefault();
+      const row = handle.closest(".player-row");
+      const rows = setupPlayerRows();
+      const currentIndex = rows.indexOf(row);
+      const targetIndex = {
+        ArrowUp: currentIndex - 1,
+        ArrowDown: currentIndex + 1,
+        Home: 0,
+        End: rows.length - 1,
+      }[event.key];
+
+      if (placePlayerRowAt(row, targetIndex)) updatePlayerPositions(row);
+      handle.focus();
     });
 
     els.setupForm.addEventListener("submit", (event) => {
@@ -1019,6 +1195,7 @@
       gameView: $("#game-view"),
       setupForm: $("#setup-form"),
       playerRows: $("#player-rows"),
+      playerOrderStatus: $("#player-order-status"),
       addPlayer: $("#add-player"),
       board: $("#dartboard"),
       missButton: $("#miss-button"),
