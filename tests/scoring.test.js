@@ -8,6 +8,7 @@ const {
   audioControlPresentation,
   boardEffectClass,
   comicCalloutForArea,
+  dartLabel,
   defaultPlayerName,
   formatPlace,
   handoffTimingFor,
@@ -29,6 +30,15 @@ test("maps accepted dart transitions to semantic sound events", () => {
   assert.equal(soundEventForDart({ area: "bullseye" }, { lastEvent: "bullseye" }), "bullseye");
   assert.equal(soundEventForDart({ area: "triple" }, { lastEvent: "bust" }), "bust");
   assert.equal(soundEventForDart({ area: "double" }, { lastEvent: "checkout" }), "checkout");
+});
+
+test("presents missed darts without scoring feedback", () => {
+  const miss = { area: "miss", value: 0, score: 0 };
+
+  assert.equal(dartLabel(miss), "MISS");
+  assert.equal(soundEventForDart(miss, { lastEvent: "miss" }), null);
+  assert.equal(boardEffectClass("miss"), null);
+  assert.equal(comicCalloutForArea("miss"), null);
 });
 
 test("maps only terminal manual scores to sound events", () => {
@@ -152,6 +162,38 @@ test("projects the remaining score after every dart in a visit", () => {
   game = applyDartHit(game, { area: "single", value: 20 });
   assert.equal(liveRemaining(game), 221);
   assert.equal(game.players[0].score, 301);
+});
+
+test("records a miss as one zero-point dart", () => {
+  const game = applyDartHit(createGame(["Kelvin", "Ada"], "straight"), {
+    area: "miss",
+    value: 0,
+  });
+
+  assert.equal(game.players[0].score, 301);
+  assert.equal(liveRemaining(game), 301);
+  assert.equal(game.currentTurn.total, 0);
+  assert.deepEqual(game.currentTurn.darts, [
+    { area: "miss", value: 0, score: 0 },
+  ]);
+  assert.equal(game.lastEvent, "miss");
+});
+
+test("completes a zero-point visit after three misses", () => {
+  let game = createGame(["Kelvin", "Ada"], "straight");
+
+  game = applyDartHit(game, { area: "miss", value: 0 });
+  game = applyDartHit(game, { area: "miss", value: 0 });
+  game = applyDartHit(game, { area: "miss", value: 0 });
+
+  assert.equal(game.players[0].score, 301);
+  assert.equal(game.currentPlayerIndex, 1);
+  assert.equal(game.history[0].total, 0);
+  assert.deepEqual(game.history[0].darts, [
+    { area: "miss", value: 0, score: 0 },
+    { area: "miss", value: 0, score: 0 },
+    { area: "miss", value: 0, score: 0 },
+  ]);
 });
 
 test("creates no handoff until a dartboard visit is complete", () => {

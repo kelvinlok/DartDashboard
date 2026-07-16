@@ -353,6 +353,7 @@
     audioControlPresentation,
     boardEffectClass,
     comicCalloutForArea,
+    dartLabel,
     defaultPlayerName,
     formatPlace,
     handoffTimingFor,
@@ -833,6 +834,7 @@
   }
 
   function dartLabel(dart) {
+    if (dart.area === "miss") return "MISS";
     if (dart.area === "triple") return `T${dart.value}`;
     if (dart.area === "double") return `D${dart.value}`;
     if (dart.area === "outerBull") return "25";
