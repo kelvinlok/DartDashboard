@@ -849,7 +849,6 @@
   }
 
   function handleBoardAction(target) {
-    if (!state.game || state.game.status !== "playing" || state.turnHandoff) return;
     const segment = target.closest(".segment");
     if (!segment) return;
 
