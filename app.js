@@ -52,6 +52,10 @@
     return game?.status === "playing";
   }
 
+  function shouldKeepManualScoreFocus(isDesktop, game, handoff) {
+    return Boolean(isDesktop && game?.status === "playing" && !handoff);
+  }
+
   function audioControlPresentation(settings) {
     const muted = Boolean(settings?.muted);
     return {
@@ -360,6 +364,7 @@
     liveRemaining,
     manualSoundEventForGame,
     normalizeLoadedGame,
+    shouldKeepManualScoreFocus,
     shouldPlayTurnChange,
     soundEventForDart,
     turnAnnouncementFor,
@@ -468,6 +473,24 @@
     hideTurnAnnouncement();
   }
 
+  function focusManualScore() {
+    const isDesktop = root.matchMedia
+      ? root.matchMedia("(min-width: 681px)").matches
+      : root.innerWidth > 680;
+
+    if (
+      !els.manualScore ||
+      els.manualScore.disabled ||
+      !shouldKeepManualScoreFocus(isDesktop, state.game, state.turnHandoff)
+    ) return;
+
+    els.manualScore.focus({ preventScroll: true });
+  }
+
+  function scheduleManualScoreFocus() {
+    setTimeout(focusManualScore, 0);
+  }
+
   function setGame(game, options) {
     clearTurnHandoff();
     state.game = game;
@@ -483,7 +506,10 @@
         render();
         pulseTurn(true);
         if (shouldPlayTurnChange(state.game)) playSound("turnChange");
+        focusManualScore();
       }, options?.handoffDuration || HANDOFF_DURATION);
+    } else {
+      focusManualScore();
     }
   }
 
@@ -1002,6 +1028,11 @@
   }
 
   function bindEvents() {
+    document.addEventListener("pointerup", (event) => {
+      if (event.pointerType !== "mouse" || event.button !== 0) return;
+      scheduleManualScoreFocus();
+    });
+
     els.addPlayer.addEventListener("click", () => {
       addPlayerRow(defaultPlayerName(els.playerRows.children.length));
     });
@@ -1230,6 +1261,7 @@
     bindEvents();
     state.game = loadGame();
     render();
+    focusManualScore();
   }
 
   if (document.readyState === "loading") {

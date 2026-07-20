@@ -15,12 +15,22 @@ const {
   liveRemaining,
   manualSoundEventForGame,
   normalizeLoadedGame,
+  shouldKeepManualScoreFocus,
   shouldPlayTurnChange,
   soundEventForDart,
   turnAnnouncementFor,
   turnHandoffFor,
   undo,
 } = require("../app.js");
+
+test("keeps keyboard score focus only for active desktop games", () => {
+  const playingGame = { status: "playing" };
+
+  assert.equal(shouldKeepManualScoreFocus(true, playingGame, null), true);
+  assert.equal(shouldKeepManualScoreFocus(false, playingGame, null), false);
+  assert.equal(shouldKeepManualScoreFocus(true, playingGame, { player: "Noob 1" }), false);
+  assert.equal(shouldKeepManualScoreFocus(true, { status: "complete" }, null), false);
+});
 
 test("maps accepted dart transitions to semantic sound events", () => {
   assert.equal(soundEventForDart({ area: "single" }, { lastEvent: "single" }), "single");
