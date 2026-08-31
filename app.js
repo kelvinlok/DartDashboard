@@ -1,6 +1,7 @@
 (function attachDartDashboard(root) {
   const STARTING_SCORE = 301;
   const STORAGE_KEY = "dart-dashboard-game";
+  const PLAYER_NAMES_STORAGE_KEY = "dart-dashboard-player-names";
   const COMIC_DURATION = 900;
   const HANDOFF_DURATION = 1000;
   const BOARD_NUMBERS = [
@@ -9,6 +10,43 @@
 
   function defaultPlayerName(index) {
     return `Noob ${index + 1}`;
+  }
+
+  function normalizePlayerNames(playerNames) {
+    if (!Array.isArray(playerNames)) return null;
+    const names = playerNames
+      .map((name) => String(name).trim())
+      .filter(Boolean);
+    return names.length >= 2 ? names : null;
+  }
+
+  function savePlayerNames(storage, playerNames) {
+    const names = normalizePlayerNames(playerNames);
+    if (!storage || !names) return false;
+    try {
+      storage.setItem(PLAYER_NAMES_STORAGE_KEY, JSON.stringify(names));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function loadPlayerNames(storage) {
+    if (!storage) return null;
+    try {
+      const raw = storage.getItem(PLAYER_NAMES_STORAGE_KEY);
+      if (!raw) return null;
+      const names = normalizePlayerNames(JSON.parse(raw));
+      if (names) return names;
+      storage.removeItem(PLAYER_NAMES_STORAGE_KEY);
+    } catch (error) {
+      try {
+        storage.removeItem(PLAYER_NAMES_STORAGE_KEY);
+      } catch (removeError) {
+        // Storage may be unavailable; defaults remain usable.
+      }
+    }
+    return null;
   }
 
   function formatPlace(place) {
@@ -362,8 +400,11 @@
     formatPlace,
     handoffTimingFor,
     liveRemaining,
+    loadPlayerNames,
     manualSoundEventForGame,
+    normalizePlayerNames,
     normalizeLoadedGame,
+    savePlayerNames,
     shouldKeepManualScoreFocus,
     shouldPlayTurnChange,
     soundEventForDart,
@@ -730,13 +771,24 @@
     };
   }
 
-  function renderSetupPlayers() {
+  function renderSetupPlayers(preferredNames) {
     const rows = Array.from(els.playerRows.querySelectorAll(".player-row"));
     const names = rows.map((row) => row.querySelector("input").value);
     els.playerRows.innerHTML = "";
-    const nextNames = names.length ? names : [defaultPlayerName(0), defaultPlayerName(1)];
+    const nextNames = preferredNames?.length
+      ? preferredNames
+      : names.length
+        ? names
+        : [defaultPlayerName(0), defaultPlayerName(1)];
 
     nextNames.forEach((name, index) => addPlayerRow(name || defaultPlayerName(index)));
+  }
+
+  function persistSetupPlayerNames() {
+    savePlayerNames(
+      localStorage,
+      setupPlayerRows().map((row) => row.querySelector("input").value),
+    );
   }
 
   function addPlayerRow(value) {
@@ -805,6 +857,7 @@
       if (state.setupDrag) state.setupDrag.moved = true;
       updatePlayerPositions();
       animatePlayerReflow(previousPositions, row);
+      persistSetupPlayerNames();
     }
     return changed;
   }
@@ -1035,6 +1088,11 @@
 
     els.addPlayer.addEventListener("click", () => {
       addPlayerRow(defaultPlayerName(els.playerRows.children.length));
+      persistSetupPlayerNames();
+    });
+
+    els.playerRows.addEventListener("input", (event) => {
+      if (event.target.matches("input")) persistSetupPlayerNames();
     });
 
     els.playerRows.addEventListener("click", (event) => {
@@ -1046,6 +1104,7 @@
       }
       button.closest(".player-row").remove();
       updatePlayerPositions();
+      persistSetupPlayerNames();
     });
 
     els.playerRows.addEventListener("dragstart", (event) => {
@@ -1132,6 +1191,7 @@
       const mode = new FormData(els.setupForm).get("outMode");
 
       try {
+        savePlayerNames(localStorage, names);
         setGame(createGame(names, mode));
         flashBoard(null);
       } catch (error) {
@@ -1214,8 +1274,11 @@
       if (state.game && !window.confirm("Start a new game?")) return;
       clearTurnHandoff();
       hideComicCallout();
+      const names = state.game?.players.map((player) => player.name);
+      savePlayerNames(localStorage, names);
       state.game = null;
       saveGame();
+      renderSetupPlayers(names);
       render();
     });
   }
@@ -1256,7 +1319,7 @@
     });
 
     initializeAudio();
-    renderSetupPlayers();
+    renderSetupPlayers(loadPlayerNames(localStorage));
     renderDartboard();
     bindEvents();
     state.game = loadGame();

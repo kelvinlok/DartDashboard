@@ -13,8 +13,11 @@ const {
   formatPlace,
   handoffTimingFor,
   liveRemaining,
+  loadPlayerNames,
   manualSoundEventForGame,
+  normalizePlayerNames,
   normalizeLoadedGame,
+  savePlayerNames,
   shouldKeepManualScoreFocus,
   shouldPlayTurnChange,
   soundEventForDart,
@@ -88,6 +91,39 @@ test("creates playful default player names", () => {
   assert.equal(defaultPlayerName(0), "Noob 1");
   assert.equal(defaultPlayerName(1), "Noob 2");
   assert.equal(defaultPlayerName(4), "Noob 5");
+});
+
+test("normalizes reusable player names before persistence", () => {
+  assert.deepEqual(normalizePlayerNames([" Kelvin ", " Ada ", ""]), ["Kelvin", "Ada"]);
+  assert.equal(normalizePlayerNames(["Kelvin", " "]), null);
+  assert.equal(normalizePlayerNames("Kelvin, Ada"), null);
+});
+
+test("persists and restores the last valid player list", () => {
+  const values = new Map();
+  const storage = {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value),
+    removeItem: (key) => values.delete(key),
+  };
+
+  assert.equal(savePlayerNames(storage, [" Kelvin ", "Ada"]), true);
+  assert.deepEqual(loadPlayerNames(storage), ["Kelvin", "Ada"]);
+  assert.equal(savePlayerNames(storage, ["Only player"]), false);
+  assert.deepEqual(loadPlayerNames(storage), ["Kelvin", "Ada"]);
+});
+
+test("discards an invalid saved player list", () => {
+  let removed = false;
+  const storage = {
+    getItem: () => "not-json",
+    removeItem: () => {
+      removed = true;
+    },
+  };
+
+  assert.equal(loadPlayerNames(storage), null);
+  assert.equal(removed, true);
 });
 
 test("formats finishing positions as ordinals", () => {
