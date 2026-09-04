@@ -1,7 +1,12 @@
 (function attachDartDashboard(root) {
   const STARTING_SCORE = 301;
+  const GAME_SCHEMA_VERSION = 1;
   const STORAGE_KEY = "dart-dashboard-game";
   const PLAYER_NAMES_STORAGE_KEY = "dart-dashboard-player-names";
+  const PERSISTENCE_WARNING =
+    "Match recovery is unavailable. Changes will stay on this page only; keep this page open.";
+  const INVALID_SAVE_WARNING =
+    "The saved match could not be recovered and was removed. Start a new game.";
   const COMIC_DURATION = 900;
   const HANDOFF_DURATION = 1000;
   const BOARD_NUMBERS = [
@@ -144,6 +149,7 @@
     }
 
     return {
+      schemaVersion: GAME_SCHEMA_VERSION,
       startingScore: STARTING_SCORE,
       outMode,
       players: names.map((name) => ({ name, score: STARTING_SCORE })),
@@ -359,12 +365,146 @@
     return previous;
   }
 
-  function normalizeLoadedGame(game) {
-    const normalized = clone(game);
-    const limit = undoHistoryLimit(normalized);
-    normalized.snapshots = Array.isArray(normalized.snapshots) && limit > 0
-      ? normalized.snapshots.slice(-limit).map(flatSnapshot)
-      : [];
+  function isPlainObject(value) {
+    return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+  }
+
+  function isSafeIntegerInRange(value, minimum, maximum) {
+    return Number.isSafeInteger(value) && value >= minimum && value <= maximum;
+  }
+
+  function isValidDart(dart) {
+    if (!isPlainObject(dart)) return false;
+    if (!isSafeIntegerInRange(dart.value, 0, Number.MAX_SAFE_INTEGER)) return false;
+    if (!isSafeIntegerInRange(dart.score, 0, Number.MAX_SAFE_INTEGER)) return false;
+
+    if (["single", "double", "triple"].includes(dart.area)) {
+      return isSafeIntegerInRange(dart.value, 1, 20) && dart.score === scoreForHit(dart);
+    }
+    if (dart.area === "outerBull") return dart.value === 25 && dart.score === 25;
+    if (dart.area === "bullseye") return dart.value === 50 && dart.score === 50;
+    if (dart.area === "miss") return dart.value === 0 && dart.score === 0;
+    if (dart.area === "manual") return dart.score === dart.value;
+    return false;
+  }
+
+  function isValidDartList(darts, allowEmpty) {
+    if (!Array.isArray(darts)) return false;
+    if ((!allowEmpty && darts.length === 0) || darts.length > 3) return false;
+    if (!darts.every(isValidDart)) return false;
+    const manualDarts = darts.filter((dart) => dart.area === "manual");
+    return manualDarts.length === 0 || (darts.length === 1 && manualDarts.length === 1);
+  }
+
+  function isValidCurrentTurn(turn) {
+    if (!isPlainObject(turn)) return false;
+    if (!isSafeIntegerInRange(turn.startScore, 1, STARTING_SCORE)) return false;
+    if (!isSafeIntegerInRange(turn.total, 0, Number.MAX_SAFE_INTEGER)) return false;
+    if (!isValidDartList(turn.darts, true)) return false;
+    return turn.total === turn.darts.reduce((total, dart) => total + dart.score, 0);
+  }
+
+  function isValidHistoryTurn(turn, players, outMode) {
+    if (!isPlainObject(turn)) return false;
+    if (!isSafeIntegerInRange(turn.playerIndex, 0, players.length - 1)) return false;
+    if (turn.player !== players[turn.playerIndex].name) return false;
+    if (!isSafeIntegerInRange(turn.startScore, 1, STARTING_SCORE)) return false;
+    if (!isSafeIntegerInRange(turn.scoreAfter, 0, STARTING_SCORE)) return false;
+    if (!isSafeIntegerInRange(turn.total, 0, Number.MAX_SAFE_INTEGER)) return false;
+    if (!["score", "bust", "win"].includes(turn.result)) return false;
+    if (!["dartboard", "manual"].includes(turn.input)) return false;
+    if (!isValidDartList(turn.darts, false)) return false;
+    if (!isPlainObject(turn.meta) || typeof turn.at !== "string") return false;
+    if (turn.total !== turn.darts.reduce((total, dart) => total + dart.score, 0)) {
+      return false;
+    }
+    if (turn.input === "manual" && turn.darts[0].area !== "manual") return false;
+    if (turn.input === "dartboard" && turn.darts.some((dart) => dart.area === "manual")) {
+      return false;
+    }
+
+    const remaining = turn.startScore - turn.total;
+    if (turn.result === "score") {
+      return remaining > 0
+        && turn.scoreAfter === remaining
+        && (outMode !== "double" || remaining !== 1);
+    }
+    if (turn.result === "bust") {
+      return turn.scoreAfter === turn.startScore
+        && (remaining < 0 || (outMode === "double" && remaining <= 1));
+    }
+    if (remaining !== 0 || turn.scoreAfter !== 0) return false;
+    if (outMode === "double" && turn.input === "dartboard") {
+      return isDoubleFinish(turn.darts.at(-1));
+    }
+    return true;
+  }
+
+  function validateGameState(game, allowSnapshots = true) {
+    if (!isPlainObject(game) || game.schemaVersion !== GAME_SCHEMA_VERSION) return false;
+    if (game.startingScore !== STARTING_SCORE) return false;
+    if (!["straight", "double"].includes(game.outMode)) return false;
+    if (!Array.isArray(game.players) || game.players.length < 2) return false;
+    if (!game.players.every((player) => (
+      isPlainObject(player)
+      && typeof player.name === "string"
+      && player.name.trim() === player.name
+      && player.name.length > 0
+      && isSafeIntegerInRange(player.score, 0, STARTING_SCORE)
+    ))) return false;
+    if (!isSafeIntegerInRange(game.currentPlayerIndex, 0, game.players.length - 1)) {
+      return false;
+    }
+    if (!isValidCurrentTurn(game.currentTurn)) return false;
+    if (!Array.isArray(game.history)) return false;
+    if (!game.history.every((turn) => isValidHistoryTurn(turn, game.players, game.outMode))) {
+      return false;
+    }
+    if (!Array.isArray(game.finishOrder)) return false;
+    if (!game.finishOrder.every((index) => (
+      isSafeIntegerInRange(index, 0, game.players.length - 1)
+    ))) return false;
+    if (new Set(game.finishOrder).size !== game.finishOrder.length) return false;
+
+    const finished = new Set(game.finishOrder);
+    if (!game.players.every((player, index) => (player.score === 0) === finished.has(index))) {
+      return false;
+    }
+    if (!["playing", "complete"].includes(game.status)) return false;
+    if (game.status === "playing") {
+      if (finished.size === game.players.length || finished.has(game.currentPlayerIndex)) return false;
+      if (game.currentTurn.startScore !== game.players[game.currentPlayerIndex].score) return false;
+      const remaining = game.currentTurn.startScore - game.currentTurn.total;
+      if (remaining <= 0 || (game.outMode === "double" && remaining === 1)) return false;
+      if (game.currentTurn.darts.length > 2) return false;
+    } else if (finished.size === 0) {
+      return false;
+    }
+
+    if (finished.size === 0) {
+      if (game.winner !== null) return false;
+    } else if (game.winner !== game.players[game.finishOrder[0]].name) {
+      return false;
+    }
+    if (game.lastEvent !== null && typeof game.lastEvent !== "string") return false;
+    if (typeof game.createdAt !== "string") return false;
+    if (!Array.isArray(game.snapshots)) return false;
+    if (!allowSnapshots) return game.snapshots.length === 0;
+    if (game.snapshots.length > undoHistoryLimit(game)) return false;
+
+    return game.snapshots.every((snapshot) => (
+      validateGameState(snapshot, false)
+      && snapshot.startingScore === game.startingScore
+      && snapshot.outMode === game.outMode
+      && snapshot.createdAt === game.createdAt
+      && snapshot.players.length === game.players.length
+      && snapshot.players.every((player, index) => player.name === game.players[index].name)
+    ));
+  }
+
+  function normalizeStateShape(game) {
+    const { snapshots: _snapshots, ...state } = game;
+    const normalized = { ...clone(state), schemaVersion: GAME_SCHEMA_VERSION, snapshots: [] };
     if (Array.isArray(normalized.finishOrder)) return normalized;
 
     normalized.finishOrder = [];
@@ -380,6 +520,111 @@
     return normalized;
   }
 
+  function normalizeLoadedGame(game) {
+    const normalized = normalizeStateShape(game);
+    const limit = undoHistoryLimit(normalized);
+    normalized.snapshots = Array.isArray(game.snapshots) && limit > 0
+      ? game.snapshots.slice(-limit).map(normalizeStateShape)
+      : [];
+    return normalized;
+  }
+
+  function migrateSavedGame(game) {
+    if (!isPlainObject(game)) return null;
+    if (game.schemaVersion === undefined || game.schemaVersion === 0) {
+      return { game: normalizeLoadedGame(game), migrated: true };
+    }
+    if (game.schemaVersion !== GAME_SCHEMA_VERSION) return null;
+    return { game: clone(game), migrated: false };
+  }
+
+  function getSafeStorage(host) {
+    try {
+      return host?.localStorage || null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveSavedGame(storage, game) {
+    if (!storage) return { ok: false, reason: "unavailable" };
+    try {
+      if (game === null) {
+        storage.removeItem(STORAGE_KEY);
+      } else {
+        if (!validateGameState(game)) return { ok: false, reason: "invalid-game" };
+        storage.setItem(STORAGE_KEY, JSON.stringify(game));
+      }
+      return { ok: true, reason: null };
+    } catch (error) {
+      return { ok: false, reason: "write-failed" };
+    }
+  }
+
+  function discardInvalidSave(storage) {
+    try {
+      storage?.removeItem(STORAGE_KEY);
+      return Boolean(storage);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function invalidSaveResult(storage) {
+    const removed = discardInvalidSave(storage);
+    return {
+      game: null,
+      warning: removed
+        ? INVALID_SAVE_WARNING
+        : "The saved match could not be recovered or removed. Match recovery is unavailable; keep this page open.",
+      persistenceAvailable: removed,
+    };
+  }
+
+  function loadSavedGame(storage) {
+    if (!storage) {
+      return { game: null, warning: PERSISTENCE_WARNING, persistenceAvailable: false };
+    }
+
+    let raw;
+    try {
+      raw = storage.getItem(STORAGE_KEY);
+    } catch (error) {
+      return { game: null, warning: PERSISTENCE_WARNING, persistenceAvailable: false };
+    }
+    if (!raw) return { game: null, warning: null, persistenceAvailable: true };
+
+    let migration;
+    try {
+      migration = migrateSavedGame(JSON.parse(raw));
+    } catch (error) {
+      return invalidSaveResult(storage);
+    }
+    if (!migration || !validateGameState(migration.game)) return invalidSaveResult(storage);
+
+    if (migration.migrated) {
+      const saved = saveSavedGame(storage, migration.game);
+      if (!saved.ok) {
+        return {
+          game: migration.game,
+          warning: PERSISTENCE_WARNING,
+          persistenceAvailable: false,
+        };
+      }
+    }
+    return { game: migration.game, warning: null, persistenceAvailable: true };
+  }
+
+  async function registerServiceWorker(navigatorObject) {
+    try {
+      if (typeof navigatorObject?.serviceWorker?.register !== "function") return false;
+      await navigatorObject.serviceWorker.register("service-worker.js");
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   function turnHandoffFor(previousGame, nextGame) {
     if (!previousGame || !nextGame) return null;
     if (nextGame.history.length <= previousGame.history.length) return null;
@@ -387,7 +632,9 @@
   }
 
   const api = {
+    GAME_SCHEMA_VERSION,
     STARTING_SCORE,
+    STORAGE_KEY,
     BOARD_NUMBERS,
     createGame,
     applyDartHit,
@@ -398,19 +645,24 @@
     dartLabel,
     defaultPlayerName,
     formatPlace,
+    getSafeStorage,
     handoffTimingFor,
     liveRemaining,
     loadPlayerNames,
+    loadSavedGame,
     manualSoundEventForGame,
     normalizePlayerNames,
     normalizeLoadedGame,
+    registerServiceWorker,
     savePlayerNames,
+    saveSavedGame,
     shouldKeepManualScoreFocus,
     shouldPlayTurnChange,
     soundEventForDart,
     turnAnnouncementFor,
     turnHandoffFor,
     undo,
+    validateGameState,
     scoreForHit,
   };
 
@@ -424,6 +676,8 @@
 
   const state = {
     game: null,
+    storage: null,
+    recoveryWarning: null,
     selectedHit: null,
     turnHandoff: null,
     handoffTimer: null,
@@ -488,23 +742,13 @@
   }
 
   function saveGame() {
-    if (!state.game) {
-      localStorage.removeItem(STORAGE_KEY);
-      return;
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.game));
+    const result = saveSavedGame(state.storage, state.game);
+    state.recoveryWarning = result.ok ? null : PERSISTENCE_WARNING;
+    return result;
   }
 
   function loadGame() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    try {
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.players && parsed.status) return normalizeLoadedGame(parsed);
-    } catch (error) {
-      localStorage.removeItem(STORAGE_KEY);
-    }
-    return null;
+    return loadSavedGame(state.storage);
   }
 
   function clearTurnHandoff() {
@@ -786,7 +1030,7 @@
 
   function persistSetupPlayerNames() {
     savePlayerNames(
-      localStorage,
+      state.storage,
       setupPlayerRows().map((row) => row.querySelector("input").value),
     );
   }
@@ -1023,6 +1267,8 @@
   }
 
   function render() {
+    els.recoveryWarning.textContent = state.recoveryWarning || "";
+    els.recoveryWarning.hidden = !state.recoveryWarning;
     renderGame();
   }
 
@@ -1191,7 +1437,7 @@
       const mode = new FormData(els.setupForm).get("outMode");
 
       try {
-        savePlayerNames(localStorage, names);
+        savePlayerNames(state.storage, names);
         setGame(createGame(names, mode));
         flashBoard(null);
       } catch (error) {
@@ -1275,7 +1521,7 @@
       clearTurnHandoff();
       hideComicCallout();
       const names = state.game?.players.map((player) => player.name);
-      savePlayerNames(localStorage, names);
+      savePlayerNames(state.storage, names);
       state.game = null;
       saveGame();
       renderSetupPlayers(names);
@@ -1287,6 +1533,7 @@
     Object.assign(els, {
       setupView: $("#setup-view"),
       gameView: $("#game-view"),
+      recoveryWarning: $("#recovery-warning"),
       setupForm: $("#setup-form"),
       playerRows: $("#player-rows"),
       playerOrderStatus: $("#player-order-status"),
@@ -1318,11 +1565,15 @@
       toast: $("#toast"),
     });
 
+    state.storage = getSafeStorage(root);
+    void registerServiceWorker(root.navigator);
     initializeAudio();
-    renderSetupPlayers(loadPlayerNames(localStorage));
+    renderSetupPlayers(loadPlayerNames(state.storage));
     renderDartboard();
     bindEvents();
-    state.game = loadGame();
+    const loaded = loadGame();
+    state.game = loaded.game;
+    state.recoveryWarning = loaded.warning;
     render();
     focusManualScore();
   }
