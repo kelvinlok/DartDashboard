@@ -1,190 +1,446 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dart Dashboard 301</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main class="app-shell">
-      <p
-        id="recovery-warning"
-        class="recovery-warning"
-        role="status"
-        aria-live="polite"
-        hidden
-      ></p>
-      <section id="setup-view" class="setup-view" aria-labelledby="setup-title">
-        <div class="setup-copy">
-          <p class="eyebrow">301 match logger</p>
-          <h1 id="setup-title">Dart Dashboard</h1>
-          <p>Local 301 scoring with a live board, clean turns, and checkout drama.</p>
-        </div>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101318">
+  <meta name="description" content="Your offline 301 darts scorekeeper. Players, scores, and every visit, saved on your device.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23242822'/%3E%3Ccircle cx='20' cy='20' r='13' fill='none' stroke='%23db4e2e' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='7' fill='none' stroke='%23db4e2e' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='2' fill='%23db4e2e'/%3E%3C/svg%3E">
+  <title>OCHE — 301 Scorekeeper</title>
+  <style>
+    :root{--paper:#f4f3ee;--white:#fffefa;--ink:#242722;--muted:#777970;--line:#ddded5;--orange:#db4e2e;--orange-light:#f6e4db;--dark:#232821;--radius:14px;--font:Arial,Helvetica,sans-serif}
+    *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button,a,input,select{-webkit-tap-highlight-color:transparent}button{cursor:pointer;color:inherit}button{touch-action:manipulation}button:disabled{cursor:default;opacity:.38}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--orange);outline-offset:4px}button{transition:background .18s,transform .18s,box-shadow .18s}button:active:not(:disabled){transform:scale(.97)}button svg{width:18px;height:18px;flex-shrink:0}svg{display:block}a{color:inherit}[hidden]{display:none!important}.muted{color:var(--muted)}.mono{font-variant-numeric:tabular-nums}.eyebrow{text-transform:uppercase;font-size:10px;font-weight:700;letter-spacing:1.8px}.icon-btn{display:grid;place-items:center;border:1px solid var(--line);background:transparent;border-radius:9px;width:38px;height:38px}.icon-btn:hover{background:#e8e8df}.btn{border:1px solid var(--line);background:transparent;border-radius:8px;min-height:42px;padding:10px 17px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:12px;font-weight:700}.btn:hover{background:#e9e9e1}.btn.dark{background:var(--ink);color:var(--white);border-color:var(--ink)}.btn.dark:hover{background:#42483c}.btn.primary{background:var(--orange);border-color:var(--orange);color:white}.btn.primary:hover{background:#c34224}.btn.subtle{border-color:transparent}.btn.danger{color:#b63624}.tag{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:700;border:1px solid var(--line);border-radius:5px;padding:6px 8px;white-space:nowrap}.dot{width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .app-header{max-width:1600px;margin:auto;height:100px;padding:0 52px;display:flex;align-items:center;gap:58px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0}.brand-mark{width:34px;height:34px;color:var(--orange)}.wordmark{font-size:34px;font-weight:900;letter-spacing:-2.6px;line-height:1}.brand-sub{font-size:8px;letter-spacing:2.4px;font-weight:700;margin-top:6px;text-align:left}.nav{display:flex;align-self:stretch;gap:30px}.nav button{position:relative;border:0;background:transparent;padding:0 2px;font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px}.nav button.active{color:var(--ink)}.nav button.active:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:3px;background:var(--orange)}.nav svg{width:15px;height:15px}.header-actions{margin-left:auto;display:flex;align-items:center;gap:24px}.save-state{display:flex;align-items:center;gap:7px;color:#69725d;font-size:11px;white-space:nowrap}.save-state.error{color:#b63624}
+    main{max-width:1600px;margin:auto;padding:37px 52px 20px}.page-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:27px;gap:20px}.breadcrumb{display:flex;gap:8px;align-items:center;font-size:10px;color:var(--muted);margin-bottom:11px}.breadcrumb span:last-child{color:var(--ink)}h1{font-size:31px;letter-spacing:-1.1px;line-height:1.15;margin:0;font-weight:600}.page-top-right{display:flex;align-items:center;gap:10px}.match-status{color:var(--orange);border-color:#e8c6b8;background:#f6ebe3}.workspace{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:29px;align-items:start}.left-workspace{min-width:0}.arena{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}.arena-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--line)}.format{display:flex;align-items:center;gap:13px}.format strong{font-size:23px;letter-spacing:-1px}.format .divider{height:23px;width:1px;background:var(--line)}.format-details{font-size:10px;line-height:1.7;color:var(--muted)}.leg-label{font-size:11px;color:var(--muted)}.leg-label strong{color:var(--ink)}.scoreboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:10px}.player-score{position:relative;min-width:0;padding:22px 22px 18px;border-radius:8px;overflow:hidden;transition:background .35s,color .35s}.player-score.active{background:var(--dark);color:var(--paper)}.player-score.active:after{content:"";position:absolute;bottom:0;left:0;width:100%;height:4px;background:var(--orange)}.player-score.winner{background:var(--dark);color:var(--paper)}.player-score .player-top{position:relative;z-index:1;display:flex;align-items:center;gap:10px}.avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#e7e8df;color:#606553;font-size:11px;font-weight:700;flex-shrink:0}.active .avatar,.winner .avatar{background:#424a3b;color:#e2e5d8}.player-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:65%}.playing-label{display:flex;align-items:center;gap:5px;color:#ef805e;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-left:auto}.player-score:not(.active):not(.winner) .playing-label{color:var(--muted)}.score-number{position:relative;font-size:clamp(65px,7.8vw,112px);font-weight:500;letter-spacing:-7px;line-height:1.16;margin:18px 0 0;font-variant-numeric:tabular-nums;z-index:1}.score-description{font-size:9px;text-transform:uppercase;letter-spacing:1.8px;color:#777e70;margin:0 0 24px 4px}.active .score-description,.winner .score-description{color:#a7ae9f}.score-stats{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding-top:15px;position:relative;z-index:1}.active .score-stats,.winner .score-stats{border-color:#464b40}.score-stats span{display:block;font-size:9px;color:var(--muted);margin-bottom:6px}.active .score-stats span,.winner .score-stats span{color:#a7ae9f}.score-stats strong{font-size:16px;font-weight:500;font-variant-numeric:tabular-nums}.score-stats .stat:last-child{text-align:right}.score-rings{position:absolute;width:310px;height:310px;right:-180px;top:5px;border:1px solid #ffffff0c;border-radius:50%;pointer-events:none}.score-rings:after,.score-rings:before{content:"";position:absolute;inset:35px;border:1px solid #ffffff0c;border-radius:50%}.score-rings:after{inset:70px}.arena-foot{display:flex;align-items:center;gap:8px;padding:13px 24px 17px;color:var(--muted);font-size:10px}.arena-foot svg{width:14px;height:14px}.arena-foot strong{color:var(--ink);font-weight:600}.arena-foot .round{margin-left:auto;font-size:10px}
+    .context-strip{display:flex;align-items:center;gap:21px;padding:20px 7px 22px;border-bottom:1px solid var(--line);min-height:125px}.board-wrap{width:88px;height:88px;flex-shrink:0}.checkout-context{flex:1;min-width:0}.checkout-context .eyebrow{font-size:9px;color:var(--muted);margin-bottom:9px}.checkout-context h2{font-size:19px;font-weight:500;letter-spacing:-.5px;margin:0 0 6px}.checkout-context p{font-size:11px;color:var(--muted);margin:0;line-height:1.6}.checkout-route{display:flex;align-items:center;gap:8px;margin-bottom:7px}.checkout-route span{font-size:19px;font-weight:700}.checkout-route i{font-style:normal;color:#aaa;font-size:13px}.context-number{font-size:38px;font-weight:500;letter-spacing:-2px;color:#b7baad;padding-right:12px}.visits-heading{display:flex;align-items:center;justify-content:space-between;margin:25px 0 16px}.visits-heading h2{font-size:15px;font-weight:600;letter-spacing:-.3px;margin:0}.visits-heading .tag{font-size:9px;padding:4px 7px;color:var(--muted)}.table-wrap{overflow:auto;max-height:300px;scrollbar-width:thin}.visit-table{width:100%;border-collapse:collapse;text-align:left;white-space:nowrap;font-size:11px}.visit-table th{font-size:9px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding:0 12px 12px;border-bottom:1px solid var(--line)}.visit-table td{padding:13px 12px;border-bottom:1px solid #e4e5dc}.visit-table th:first-child,.visit-table td:first-child{padding-left:4px;color:var(--muted);width:65px}.visit-table th:last-child,.visit-table td:last-child{text-align:right;padding-right:4px}.visit-score{font-weight:700}.bust-text{color:var(--orange);font-size:10px}.empty-visits{display:flex;align-items:center;justify-content:center;gap:12px;min-height:97px;color:var(--muted);font-size:11px}.empty-visits svg{width:24px;height:24px;opacity:.5}.empty-visits p{margin:0;line-height:1.7}.empty-visits strong{font-weight:500;color:#60655a}.visit-table tbody tr:first-child{animation:row-in .3s ease-out}
+    .scoring-panel{background:#eaece2;border:1px solid #d9dccf;border-radius:var(--radius);padding:22px}.scoring-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.scoring-top .eyebrow{color:#777e6c;font-size:9px}.scoring-player{font-size:14px;font-weight:600;margin-top:7px;max-width:235px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.turn-indicator{width:30px;height:30px;border:1px solid #ccd0bf;border-radius:50%;display:grid;place-items:center}.turn-indicator svg{width:14px;height:14px}.score-input-wrap{position:relative;background:var(--white);border:1px solid #d8dbcf;border-radius:9px;transition:border .2s;overflow:hidden}.score-input-wrap:focus-within{border-color:var(--orange);box-shadow:0 0 0 2px #db4e2e13}.input-caption{position:absolute;top:13px;left:15px;font-size:9px;color:var(--muted)}#score-input{border:0;outline:none;background:transparent;width:100%;height:102px;padding:31px 16px 7px;color:var(--ink);font-size:48px;font-weight:500;letter-spacing:-2px;font-variant-numeric:tabular-nums}#score-input::placeholder{color:#c6c9bc}.input-suffix{position:absolute;bottom:17px;right:16px;font-size:10px;color:var(--muted)}.input-error{font-size:11px;color:#ac3321;line-height:1.4;margin:9px 0 0}.quick-scores{display:flex;gap:6px;margin:12px 0 18px}.quick-scores button{flex:1;border:1px solid #ccd0c0;background:transparent;border-radius:5px;height:30px;font-size:10px;font-weight:600}.quick-scores button:hover{background:#dce0d0;border-color:#9aa38a}.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.keypad button{border:1px solid #dadccf;background:var(--white);border-radius:7px;height:55px;font-size:23px;font-weight:500;box-shadow:0 2px 0 #00000003}.keypad button:hover{background:#fff;box-shadow:0 2px 7px #00000008;transform:translateY(-1px)}.keypad button.utility{font-size:11px;background:transparent;color:#667056;border-color:#cdd2bf}.keypad button svg{margin:auto;width:19px;height:19px}.darts-row{display:flex;align-items:center;justify-content:space-between;margin:16px 0;font-size:10px;color:#747c67}.segmented{display:flex;border:1px solid #c9cfba;border-radius:5px;padding:3px;gap:2px}.segmented button{border:0;background:transparent;width:29px;height:24px;font-size:10px;border-radius:3px}.segmented button.active{background:var(--white);box-shadow:0 1px 3px #0000000b;color:var(--ink);font-weight:700}.submit-score{width:100%;height:47px;font-size:12px;justify-content:space-between;padding:0 16px}.scoring-bottom{display:flex;gap:9px;margin-top:11px}.scoring-bottom button{flex:1;font-size:10px;min-height:35px;padding:7px 8px;border-color:#cdd2bf}.scoring-bottom svg{width:14px;height:14px}.keyboard-hint{font-size:9px;color:#8b907f;text-align:center;margin:17px 0 0}.keyboard-hint kbd{font-family:inherit;font-size:8px;border:1px solid #cdd2bf;border-radius:3px;padding:2px 4px;background:#f0f1e9}.scoring-note{font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0}.scoring-note svg{width:12px;height:12px}.winner-panel{padding:32px 0;text-align:center}.winner-panel svg{width:50px;height:50px;margin:0 auto 18px;color:var(--orange)}.winner-panel h2{font-size:29px;letter-spacing:-1px;overflow-wrap:anywhere;margin:8px 0}.winner-panel p{color:var(--muted);font-size:12px;line-height:1.6;margin-bottom:26px}.winner-panel .btn{width:100%;margin-bottom:9px}.app-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:31px;padding:19px 0 6px;color:#939689;font-size:9px}.footer-brand{font-weight:700;letter-spacing:1.7px}.footer-links{display:flex;align-items:center;gap:17px}.footer-links button{background:none;padding:2px 0;border:0;font-size:9px;color:var(--muted)}.footer-links button:hover{color:var(--orange)}
+    .screen{animation:screen-in .45s cubic-bezier(.2,.7,.2,1)}.screen-top{margin-bottom:34px}.screen-top p{font-size:12px;color:var(--muted);line-height:1.7;margin:10px 0 0}.profile-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:23px}.profile{padding:24px 0;border-top:1px solid var(--line)}.profile-head{display:flex;gap:12px;align-items:center}.profile-head .avatar{width:43px;height:43px;font-size:14px}.profile-head h2{font-size:17px;margin:0;font-weight:500;overflow-wrap:anywhere}.profile-head .icon-btn{margin-left:auto;flex-shrink:0;border:0}.profile-stats{display:flex;gap:32px;margin:25px 0}.profile-stats strong{font-size:28px;font-weight:500;letter-spacing:-1px}.profile-stats span{display:block;margin-top:6px;color:var(--muted);font-size:10px}.profile-foot{font-size:10px;color:var(--muted)}.history-list{border-top:1px solid var(--line)}.history-item{display:flex;width:100%;align-items:center;gap:23px;background:transparent;border:0;border-bottom:1px solid var(--line);padding:24px 0;text-align:left}.history-item:hover{background:#eaece2}.history-date{width:85px;color:var(--muted);font-size:11px;line-height:1.8;flex-shrink:0}.history-main{flex:1;min-width:0}.history-main strong{display:block;font-size:16px;font-weight:500;margin-bottom:7px;overflow-wrap:anywhere}.history-main span{font-size:10px;color:var(--muted)}.history-result{font-size:12px;text-align:right;line-height:1.8}.history-result small{display:block;color:var(--muted);font-size:10px}.empty-screen{display:grid;place-items:center;padding:80px 20px;text-align:center}.empty-screen svg{width:54px;height:54px;color:#b1b7a5;margin-bottom:16px}.empty-screen h2{font-size:22px;font-weight:500;margin:0 0 10px}.empty-screen p{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:20px}
+    dialog{border:1px solid var(--line);border-radius:17px;padding:0;width:min(490px,calc(100% - 32px));background:var(--paper);color:var(--ink);box-shadow:0 24px 100px #0003;max-height:90svh}dialog[open]{animation:dialog-in .25s ease-out}dialog::backdrop{background:#171d1bb0;backdrop-filter:blur(5px)}.dialog-head{display:flex;align-items:center;justify-content:space-between;padding:24px 27px 0;gap:15px}.dialog-head h2{font-size:23px;font-weight:500;letter-spacing:-.7px;margin:0}.dialog-body{padding:21px 27px 27px}.dialog-body>p{font-size:12px;color:var(--muted);line-height:1.8;margin:0 0 19px}.field{margin-bottom:20px}.field>label,.field-label{font-size:11px;font-weight:600;display:block;margin-bottom:9px}.text-input,.select-input{width:100%;border:1px solid var(--line);border-radius:7px;background:var(--white);padding:12px;font-size:13px;color:var(--ink)}.player-choices{display:flex;flex-direction:column;gap:7px;max-height:215px;overflow:auto;padding:3px}.player-choice{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:7px;padding:9px 11px;font-size:12px;cursor:pointer}.player-choice input{accent-color:var(--orange);width:15px;height:15px}.player-choice:has(input:checked){border-color:#dbaa94;background:#f4e8dd}.player-choice span{overflow-wrap:anywhere;min-width:0}.player-choice .order{margin-left:auto;font-size:9px;color:var(--muted);flex-shrink:0}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:15px}.dialog-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:25px}.dialog-actions .btn{flex:1}.inline-add{display:flex;gap:8px;margin-top:10px}.inline-add input{min-width:0}.dialog-info{padding:13px;border-radius:7px;background:#e9ecdf;font-size:11px;line-height:1.7;color:#657052}.rule-list{font-size:12px;line-height:1.8;padding-left:18px;color:#626759}.rule-list li{padding:4px 0}.toast{position:fixed;bottom:25px;left:50%;transform:translate(-50%,15px);background:var(--dark);color:white;z-index:10;padding:13px 20px;border-radius:9px;font-size:12px;box-shadow:0 5px 25px #0002;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:calc(100% - 30px);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}.confetti{position:fixed;pointer-events:none;z-index:9;inset:0;overflow:hidden}.confetti i{position:absolute;top:-20px;width:7px;height:13px;background:var(--orange);animation:confetti-fall 2.5s ease-in forwards}.confetti i:nth-child(3n){background:#8a9674}.confetti i:nth-child(3n+1){background:#e5bc70}.score-pop{animation:score-pop .38s ease-out}.error-shake{animation:shake .25s ease-out}
+    @keyframes screen-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes dialog-in{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}@keyframes score-pop{0%{opacity:.3;transform:translateY(9px)}100%{opacity:1;transform:none}}@keyframes row-in{from{opacity:0;background:#f5e5d5}to{opacity:1;background:transparent}}@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}@keyframes confetti-fall{to{transform:translate3d(70px,105vh,0) rotate(680deg);opacity:0}}
+    .entry-remaining{text-align:right;padding-left:10px}.entry-remaining strong{display:block;font-size:25px;font-weight:500;letter-spacing:-1px;font-variant-numeric:tabular-nums}.entry-remaining span{display:block;font-size:7px;letter-spacing:1.3px;color:var(--muted);margin-top:2px}.scoring-top>div:first-child{min-width:0}.scoring-note.error{color:#ac3321;line-height:1.6;text-align:center}
+    @media(min-width:1500px){.workspace{grid-template-columns:minmax(0,1fr) 385px}.keypad button{height:60px}.score-number{font-size:125px}.player-score{padding:27px}.context-strip{min-height:145px}}
+    @media(max-width:1100px){.app-header{padding:0 30px;gap:35px}.header-actions{gap:15px}.save-state{font-size:10px}.nav{gap:20px}main{padding:29px 30px 20px}.workspace{grid-template-columns:minmax(0,1fr) 310px;gap:20px}.scoring-panel{padding:19px}.player-score{padding:17px 14px}.score-number{font-size:85px}.playing-label{font-size:7px}.player-name{max-width:55%}.score-stats{gap:5px}.score-stats span{font-size:8px}.arena-head{padding:17px}.profile-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:850px){.app-header{height:83px;padding:0 22px;gap:30px}.brand-sub{font-size:7px}.wordmark{font-size:30px}.brand-mark{width:29px}.nav{gap:16px}.nav button{font-size:11px}.header-actions .save-state{display:none}.header-actions .btn{font-size:10px;padding:9px 12px;min-height:37px}main{padding:27px 22px 16px}.workspace{grid-template-columns:minmax(0,1fr) 284px;gap:16px}.scoring-panel{padding:16px}.player-score{padding:16px 12px}.player-name{font-size:11px;max-width:70%}.player-top{flex-wrap:wrap}.playing-label{width:100%;margin:1px 0 0 0}.score-number{font-size:76px;letter-spacing:-5px}.score-stats{flex-wrap:wrap;gap:13px}.score-stats .stat:last-child{text-align:left}.avatar{width:27px;height:27px;font-size:9px}.context-strip{gap:13px}.board-wrap{width:69px;height:69px}.context-number{display:none}.format-details{font-size:9px}.arena-foot{padding:10px 17px 16px;flex-wrap:wrap}.arena-foot .round{margin-left:0;width:100%;padding-left:22px}.keypad button{height:51px}.profile-stats{gap:25px}}
+    @media(max-width:680px){.app-header{height:76px;padding:0 19px;gap:0;flex-wrap:wrap;position:relative;margin-bottom:48px}.brand{gap:8px}.wordmark{font-size:30px}.header-actions .btn{font-size:10px}.nav{position:absolute;top:76px;left:0;right:0;height:47px;padding:0 19px;gap:29px;border-bottom:1px solid var(--line)}.nav button{font-size:11px}.nav button.active:after{height:2px}.header-actions{gap:8px}.header-actions .icon-btn{width:34px;height:34px}main{padding:23px 16px 15px}.page-top{margin-bottom:20px;gap:10px}h1{font-size:27px}.breadcrumb{font-size:9px;margin-bottom:8px}.page-top-right{gap:6px}.page-top-right .tag{font-size:8px;padding:6px}.workspace{display:flex;flex-direction:column;gap:21px}.left-workspace,.right-workspace{width:100%}.left-workspace{display:contents}.arena{order:0;width:100%}.right-workspace{order:1}.context-strip{order:2;width:100%;padding:0 8px 17px;min-height:105px}.visit-section{order:3;width:100%;margin-top:-8px}.scoreboard{padding:8px;gap:5px}.player-score{padding:16px}.player-score .player-top{gap:8px}.player-name{font-size:12px}.playing-label{font-size:7px}.score-number{font-size:85px;margin-top:11px}.score-description{font-size:8px;margin-bottom:18px}.score-stats{gap:9px;flex-wrap:nowrap}.score-stats span{font-size:7px}.score-stats strong{font-size:14px}.arena-head{padding:13px 17px}.format strong{font-size:21px}.arena-foot{flex-wrap:nowrap;padding:10px 17px 14px;font-size:9px}.arena-foot .round{width:auto;margin-left:auto;padding:0;font-size:9px}.scoring-panel{padding:19px}.scoring-top{margin-bottom:13px}.scoring-player{margin-top:5px}.scoring-top .eyebrow{font-size:8px}.score-input-wrap{margin-bottom:0}#score-input{height:86px;font-size:43px;padding-top:27px}.quick-scores{margin:10px 0 13px}.keypad button{height:52px}.darts-row{margin:13px 0}.scoring-note{margin-bottom:0}.keyboard-hint{display:none}.board-wrap{width:83px;height:83px}.checkout-context h2{font-size:20px}.app-footer{margin-top:25px;align-items:flex-start;gap:14px}.footer-links{gap:12px;flex-wrap:wrap;justify-content:flex-end}.footer-links>span{display:none}.profile-grid{grid-template-columns:1fr}.profile-stats{gap:45px}.screen-top{align-items:flex-start}.screen-top .btn{padding:10px;white-space:nowrap}.history-item{gap:12px;padding:20px 0}.history-date{width:55px;font-size:9px}.history-main strong{font-size:13px}.history-result{font-size:10px;max-width:85px}.history-main span{font-size:9px}.dialog-head{padding:22px 21px 0}.dialog-body{padding:19px 21px 23px}}
+    @media(max-width:370px){.player-score{padding:13px 10px}.score-number{font-size:75px}.score-stats span{font-size:6px}.score-stats strong{font-size:13px}.page-top-right .match-status{display:none}.arena-foot .round{display:none}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.confetti{display:none}}
 
-        <form id="setup-form" class="setup-panel">
-          <div class="panel-heading">
-            <span>Players</span>
-            <button id="add-player" type="button" class="ghost-button">Add</button>
-          </div>
+    /* Arcade scoring workspace. Segment colors also identify hit animations. */
+    :root{--paper:#101318;--white:#171c23;--ink:#edf1f6;--muted:#8a95a5;--line:#2a323e;--orange:#c5f56b;--orange-light:#263722;--dark:#1c2520;--double:#6ee7d6;--triple:#b69aff;--bull:#ffcb6c}
+    body{background:var(--paper)}.app-header{height:86px;padding:0 40px;gap:48px}.brand{text-align:left}.brand-mark{color:var(--orange)}.wordmark{font-style:italic;font-size:35px;letter-spacing:-2px}.brand-sub{color:var(--muted);font-size:7px;letter-spacing:2.6px}.nav button.active{color:var(--orange)}.header-actions{gap:14px}.save-state{color:#9fba8a}.btn.dark,.btn.primary{background:var(--orange);color:#182012;border-color:var(--orange)}.btn.dark:hover,.btn.primary:hover{background:#d5ff8f}.btn:hover,.icon-btn:hover{background:#29313b}.btn.subtle:hover{background:#202833}.btn.danger{color:#ff938b}.tag{color:var(--muted)}.match-status{color:var(--orange);border-color:#445932;background:#1e2b1b}.text-input,.select-input{background:#151b23;color:var(--ink)}.dialog-info{background:#212d21;color:#b5ce9f}.player-choice:has(input:checked){background:#23301e;border-color:#546c3d}.rule-list{color:#b4becc}.dialog-body>p{color:#a1adbd}.toast{background:#e3eccf;color:#1c2618}.profile-head .avatar{background:#28322b;color:#c9ddb9}.profile-head h2{color:var(--ink)}.history-item:hover{background:#191f28}.history-item>svg{width:19px;flex-shrink:0}.app-footer{color:#687587;margin-top:32px}.footer-links button{color:#909eaf}.footer-links button:hover{color:var(--orange)}.sound-toggle{font-size:10px;white-space:nowrap;min-width:94px}.sound-toggle.on{color:var(--orange);border-color:#506a32}main{padding:27px 40px 18px}.page-top{margin-bottom:23px}.page-top h1{font-size:31px;font-weight:800;letter-spacing:-1px}.page-top h1 span{font-size:12px;font-weight:500;letter-spacing:2.3px;color:var(--muted);margin-left:14px;vertical-align:middle}.breadcrumb{margin-bottom:9px}.arcade-layout{display:grid;grid-template-columns:240px minmax(300px,1fr) 280px;gap:26px;align-items:start}.arcade-players{min-width:0}.section-label{display:flex;align-items:center;justify-content:space-between;min-height:36px;margin-bottom:10px}.section-label h2{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;margin:0;color:#a2adba}.section-label span{font-size:10px;color:var(--muted)}.arcade-roster{display:flex;flex-direction:column;border-top:1px solid var(--line)}.arcade-player{padding:16px 10px;border-bottom:1px solid var(--line);position:relative;display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:11px;align-items:center;transition:background .2s}.arcade-player.active{background:#20291e;box-shadow:inset 3px 0 var(--orange)}.arcade-player .avatar{background:#2a303b;color:#9dabbc;width:29px;height:29px;font-size:10px}.arcade-player.active .avatar{background:#3c502b;color:var(--orange)}.arcade-player .player-name{font-size:12px;display:block;max-width:none;color:#c9d2de}.arcade-player.active .player-name{color:#f0f9e7}.arcade-player .playing-label{font-size:7px;letter-spacing:1.1px;display:block;margin:6px 0 0;color:#758393}.arcade-player.active .playing-label{color:var(--orange)}.arcade-player .score-number{font-size:36px;font-weight:600;letter-spacing:-2px;line-height:1;margin:0;text-align:right}.arcade-player.active .score-number{color:var(--orange)}.roster-meta{grid-column:2/4;display:flex;gap:14px;font-size:9px;color:#8190a2;margin-top:1px}.roster-meta strong{color:#b6c1cf;font-weight:500}.roster-rule{padding:19px 10px;font-size:10px;line-height:1.9;color:var(--muted)}.roster-rule strong{color:#c5d0db;font-weight:500}.arcade-roster.many .arcade-player{padding-top:11px;padding-bottom:11px}.arcade-roster.many .roster-meta{display:none}.roster-rule .tag{margin-bottom:9px}.arcade-board-column{min-width:0}.board-topline{display:flex;justify-content:space-between;align-items:center;min-height:36px;margin-bottom:8px;gap:8px}.board-topline h2{margin:0;font-size:13px;font-weight:500}.board-topline .eyebrow{font-size:8px;color:#92a080;letter-spacing:1.2px}.board-stage{position:relative;isolation:isolate;max-width:570px;margin:auto;touch-action:manipulation}.board-stage:before{content:"";position:absolute;inset:5%;border-radius:50%;box-shadow:0 0 70px #b7ef5110;pointer-events:none;z-index:-1}.interactive-board{width:100%;height:auto;overflow:visible;user-select:none;-webkit-user-select:none;filter:drop-shadow(0 18px 16px #0007);display:block}.board-segment{cursor:crosshair;stroke:#78828b;stroke-width:.7;transition:filter .12s,fill .12s;outline:none;touch-action:manipulation}.board-segment:hover,.board-segment:focus-visible{filter:brightness(1.45);stroke:#fff;stroke-width:2.6}.board-segment:focus-visible{stroke:var(--orange);stroke-width:4}.board-segment.recommended{stroke:var(--orange);stroke-width:2.8}.board-segment.hit-flash{animation:segment-hit .65s ease-out}.interactive-board.locked .board-segment{cursor:default;pointer-events:none}.board-label{fill:#dbe0e7;font-size:17px;font-weight:600;pointer-events:none}.board-center-mark{pointer-events:none}.dart-pin{pointer-events:none;filter:drop-shadow(0 2px 3px #0009)}.board-legend{display:flex;align-items:center;justify-content:center;gap:17px;flex-wrap:wrap;margin:15px 0 17px;color:#8b98a9;font-size:9px}.board-legend span{display:flex;gap:6px;align-items:center}.legend-dot{width:6px;height:6px;border-radius:2px;display:inline-block;background:#c6c8b7}.legend-dot.double{background:var(--double)}.legend-dot.triple{background:var(--triple)}.legend-dot.bull{background:var(--bull)}.board-instruction{text-align:center;font-size:10px;color:#69798d;margin:0 0 15px}.precision-entry{border-top:1px solid var(--line);padding-top:13px}.precision-entry summary{font-size:10px;color:#9ba8ba;cursor:pointer;padding:5px 0}.precision-entry summary::marker{color:var(--orange)}.precision-controls{display:flex;gap:7px;padding:13px 0 10px}.precision-controls button{background:transparent;border:1px solid var(--line);border-radius:5px;padding:8px 12px;flex:1;font-size:10px}.precision-controls button.active{border-color:var(--orange);color:var(--orange);background:#26331f}.precision-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px}.precision-grid button{min-height:35px;border:1px solid var(--line);background:#1d2530;border-radius:4px;font-size:11px}.precision-grid button:hover{background:#34432b}.precision-specials{display:flex;gap:7px;margin-top:8px}.precision-specials button{flex:1;min-height:36px;font-size:10px}.board-turn-callout{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}.board-turn-callout>div{background:#0c1117ed;border:1px solid #4b6335;padding:22px 30px;text-align:center;border-radius:12px;box-shadow:0 8px 50px #0009;max-width:90%}.board-turn-callout .eyebrow{color:var(--orange);font-size:8px}.board-turn-callout strong{display:block;font-size:29px;letter-spacing:-1px;margin:9px 0 0}.board-turn-callout small{display:block;color:#a4b29d;font-size:11px;margin-top:8px;line-height:1.6}
+    .dart-console{background:#191f28;border:1px solid #303a48;border-radius:12px;padding:23px 20px;position:relative;overflow:hidden}.dart-console:before{content:"";height:2px;background:var(--orange);position:absolute;top:0;left:20px;right:20px;opacity:.7}.console-kicker{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px;gap:10px}.console-kicker .eyebrow{color:#92a084;font-size:8px;letter-spacing:1.4px}.console-player{font-size:19px;letter-spacing:-.5px;margin:0;overflow-wrap:anywhere;font-weight:500}.console-score{font-size:83px;letter-spacing:-5px;line-height:1.1;margin-top:16px;font-weight:600;font-variant-numeric:tabular-nums}.console-score-caption{font-size:8px;color:#93a179;letter-spacing:2px;text-transform:uppercase;margin-top:1px}.dart-tray{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:25px 0 17px}.dart-slot{border:1px solid #323d4b;border-radius:7px;min-height:86px;padding:10px 3px;text-align:center;position:relative;overflow:hidden;background:#151a22}.dart-slot.next{border-color:#718a45;box-shadow:inset 0 -2px var(--orange)}.dart-slot>span{display:block;font-size:7px;letter-spacing:1.3px;color:#758296;margin-bottom:10px}.dart-slot strong{display:block;font-size:20px;font-weight:500;color:#526073;letter-spacing:-.5px}.dart-slot.filled strong{color:#e2eaf6}.dart-slot em{font-size:8px;font-style:normal;color:#a1aec0;display:block;margin-top:5px}.dart-slot.double{border-color:#356159}.dart-slot.double strong{color:var(--double)}.dart-slot.triple{border-color:#5a4879}.dart-slot.triple strong{color:var(--triple)}.dart-slot.bull{border-color:#7a613b}.dart-slot.bull strong{color:var(--bull)}.dart-slot.filled{animation:dart-slot-in .25s ease-out}.visit-tally{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:15px;margin-bottom:17px}.visit-tally span{font-size:10px;color:#8e9fb3}.visit-tally strong{font-size:25px;letter-spacing:-1px;color:var(--orange);font-weight:500}.visit-tally strong.busted{color:#ff8179;font-size:19px;letter-spacing:0}.console-actions{display:flex;gap:8px}.console-actions .btn{flex:1;font-size:10px;padding:10px 7px;min-height:40px}.console-next{width:100%;margin-bottom:10px;min-height:46px;justify-content:space-between}.end-visit{display:block;margin:10px auto 0;border:0;background:none;color:#8f9bae;font-size:9px;padding:7px}.end-visit:hover{color:var(--orange)}.console-help{margin:16px 0 0;color:#718094;font-size:9px;line-height:1.7;text-align:center}.arcade-checkout{padding:20px 3px 0}.arcade-checkout .eyebrow{font-size:8px;color:#798ca0;margin-bottom:12px}.arcade-checkout .checkout-route{gap:9px}.arcade-checkout .checkout-route span{color:var(--orange);font-size:23px}.arcade-checkout p{font-size:10px;line-height:1.8;color:#8a9aac;margin:7px 0 0}.arcade-checkout h3{font-size:14px;font-weight:500;margin:0}.arcade-history{margin-top:27px;border-top:1px solid var(--line);padding-top:20px}.arcade-history .visits-heading{margin:0 0 18px}.visit-table td{border-color:#27313c;color:#becbd9}.visit-table th{color:#73859a}.visit-table td .hit-code{padding:3px 5px;border-radius:3px;font-size:9px;margin-right:3px;background:#26303e;color:#c1cddd}.visit-table td .hit-code.triple{color:var(--triple)}.visit-table td .hit-code.double{color:var(--double)}.visit-table td .hit-code.bull{color:var(--bull)}.empty-visits strong{color:#a5b3c4}.empty-visits{color:#6f8297}.scoring-note{font-size:9px;line-height:1.7;text-align:center}.winner-panel{padding:18px 0}.winner-panel p{color:#9dadc1}.winner-panel h2{color:#f0f5e9}.winner-panel .btn.subtle{color:#a2b190}.score-pop{animation:arcade-score .4s ease-out}
+    .arcade-fx{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:4;--fx:var(--orange);overflow:visible}.arcade-fx.double{--fx:var(--double)}.arcade-fx.triple{--fx:var(--triple)}.arcade-fx.bull,.arcade-fx.maximum,.arcade-fx.win{--fx:var(--bull)}.arcade-fx.bust{--fx:#ff827a}.fx-caption{text-align:center;position:relative;transform:rotate(-7deg);color:var(--fx);text-shadow:0 3px 0 #080d15,0 0 30px color-mix(in srgb,var(--fx) 55%,transparent);animation:arcade-slam 1s cubic-bezier(.15,.7,.25,1) both}.fx-caption small{font-size:13px;font-weight:800;letter-spacing:6px;display:block;color:#eff5ff;text-shadow:0 2px 8px #000}.fx-caption strong{display:block;font-size:clamp(52px,7vw,102px);letter-spacing:-5px;font-style:italic;line-height:1.2;font-weight:900;-webkit-text-stroke:1px currentColor}.fx-caption span{display:inline-block;background:var(--fx);color:#10151b;padding:5px 13px;font-size:12px;font-weight:800;letter-spacing:2px;box-shadow:4px 4px 0 #0a101ae0}.fx-aura{position:absolute;inset:10%;border-radius:50%;background:radial-gradient(ellipse,color-mix(in srgb,var(--fx) 25%,transparent),transparent 68%);animation:aura-impact .95s ease-out both}.fx-ring{position:absolute;width:28%;aspect-ratio:1;border:3px solid var(--fx);border-radius:50%;box-shadow:0 0 20px color-mix(in srgb,var(--fx) 50%,transparent);animation:shockwave .8s ease-out both}.fx-spark{position:absolute;left:50%;top:50%;width:4px;height:19px;background:var(--fx);border-radius:2px;transform-origin:center;animation:spark-burst .85s ease-out both;animation-delay:var(--delay)}.arcade-fx.single .fx-caption strong,.arcade-fx.miss .fx-caption strong{font-size:72px}.arcade-fx.single .fx-caption{animation-duration:.6s}.arcade-fx.bull .fx-ring:nth-child(2){animation-delay:.13s}.arcade-fx.maximum .fx-caption strong{font-size:clamp(85px,11vw,150px)}.board-stage.impact{animation:board-impact .32s ease-out}.last-hit-banner{display:flex;justify-content:space-between;align-items:center;font-size:9px;color:#8999ac;min-height:24px;margin-top:8px}.last-hit-banner strong{font-size:10px;color:var(--orange);letter-spacing:1px}.last-hit-banner.triple strong{color:var(--triple)}.last-hit-banner.double strong{color:var(--double)}.last-hit-banner.bull strong{color:var(--bull)}
+    @keyframes segment-hit{0%,30%{fill:#fff;filter:drop-shadow(0 0 10px #fff)}100%{filter:none}}@keyframes arcade-slam{0%{opacity:0;transform:scale(2.5) rotate(-12deg)}16%{opacity:1;transform:scale(.94) rotate(-7deg)}25%,65%{opacity:1;transform:scale(1) rotate(-7deg)}100%{opacity:0;transform:scale(1.1) translateY(-30px) rotate(-7deg)}}@keyframes shockwave{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(3.5)}}@keyframes aura-impact{0%{opacity:0;transform:scale(.5)}15%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:scale(1.5)}}@keyframes spark-burst{0%{opacity:1;transform:rotate(var(--angle)) translateY(-35px) scaleY(.3)}100%{opacity:0;transform:rotate(var(--angle)) translateY(-220px) scaleY(1)}}@keyframes board-impact{0%,100%{transform:translate(0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-1px)}}@keyframes dart-slot-in{from{transform:translateY(-7px);opacity:.2}to{transform:none;opacity:1}}@keyframes arcade-score{0%{filter:brightness(2);transform:scale(1.08)}100%{filter:brightness(1);transform:none}}
+    @media(min-width:1550px){.arcade-layout{grid-template-columns:270px minmax(350px,1fr) 310px;gap:35px}.dart-console{padding:25px}.console-score{font-size:97px}.board-stage{max-width:620px}}
+    @media(max-width:1180px){.app-header{padding:0 25px;gap:32px}main{padding:25px}.arcade-layout{grid-template-columns:190px minmax(270px,1fr) 250px;gap:18px}.arcade-player{gap:8px;padding-left:8px;padding-right:8px}.arcade-player .score-number{font-size:31px}.roster-meta{gap:8px;font-size:8px}.dart-console{padding:20px 15px}.console-score{font-size:73px}.dart-slot{min-height:76px}.dart-tray{margin-top:20px}.console-player{font-size:17px}.save-state{display:none}.board-label{font-size:18px}.board-legend{gap:10px;font-size:8px}.console-actions .btn{font-size:9px}.sound-toggle{min-width:75px;padding:9px}}
+    @media(max-width:940px){.arcade-layout{grid-template-columns:minmax(0,1fr) 250px;gap:20px}.arcade-players{grid-column:1/-1}.arcade-players .section-label{display:none}.arcade-roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:0;gap:5px}.arcade-player,.arcade-roster.many .arcade-player{padding:12px 10px;border:1px solid var(--line);border-radius:6px;grid-template-columns:minmax(0,1fr) auto;gap:5px}.arcade-player .avatar,.roster-meta{display:none}.arcade-player .score-number{font-size:30px}.arcade-player .player-name{font-size:11px}.arcade-player .playing-label{font-size:6px;margin-top:5px}.roster-rule{display:none}.arcade-board-column{grid-column:1}.arcade-console-column{grid-column:2}.board-topline h2{font-size:11px}.board-topline .eyebrow{font-size:7px}.arcade-checkout{padding-top:16px}.arcade-roster:not(.many){grid-template-columns:repeat(2,minmax(0,1fr))}.precision-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.header-actions{gap:8px}.nav{gap:20px}}
+    @media(max-width:680px){.app-header{height:70px;padding:0 16px;margin-bottom:44px;gap:0}.wordmark{font-size:29px}.brand-mark{width:27px}.brand-sub{font-size:6px;letter-spacing:1.7px}.nav{top:70px;height:44px;padding:0 17px;gap:28px}.header-actions .btn{font-size:9px;padding:8px 10px;min-height:34px}.header-actions .sound-toggle{font-size:0;min-width:34px;width:34px;padding:8px}.sound-toggle svg{width:16px}.header-actions .btn>svg{width:14px}.page-top{margin-bottom:17px}.page-top h1{font-size:26px}.page-top h1 span{font-size:9px;letter-spacing:1.5px;margin-left:9px}.breadcrumb{display:none}main{padding:20px 14px 14px}.arcade-layout{display:flex;flex-direction:column;gap:15px}.arcade-players{width:100%;order:0}.arcade-roster{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.arcade-player,.arcade-roster.many .arcade-player{display:flex;flex-direction:column;align-items:flex-start;padding:9px 8px;gap:8px}.arcade-player>div{width:100%}.arcade-player .score-number{font-size:28px;text-align:left;letter-spacing:-1px}.arcade-player .player-name{font-size:10px;max-width:100%}.arcade-roster:not(.many) .arcade-player{display:grid;grid-template-columns:1fr auto;align-items:center;padding:11px 13px}.arcade-roster:not(.many) .arcade-player .score-number{font-size:35px}.arcade-roster:not(.many) .arcade-player .player-name{font-size:12px}.arcade-board-column{width:100%;order:1}.arcade-console-column{width:100%;order:2}.board-topline{margin-bottom:0;min-height:29px;padding:0 4px}.board-topline h2{font-size:11px}.board-topline .eyebrow{font-size:7px}.board-stage{max-width:440px}.board-legend{margin:9px 0 12px;font-size:8px;gap:13px}.board-instruction{font-size:9px}.precision-entry{padding-top:7px}.precision-entry summary{font-size:10px;padding:9px 3px}.precision-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.precision-grid button{min-height:42px}.precision-controls button{min-height:40px}.dart-console{padding:19px;display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:0 15px}.dart-console .console-kicker{grid-column:1/-1;margin-bottom:8px}.console-player{font-size:19px;grid-column:1;align-self:center}.console-score{grid-column:2;grid-row:2/4;text-align:right;margin:0;font-size:55px;letter-spacing:-3px}.console-score-caption{grid-column:1;font-size:7px;margin-top:6px}.dart-tray{grid-column:1/-1;margin:20px 0 12px;gap:9px}.dart-slot{min-height:75px;padding:9px}.dart-slot>span{margin-bottom:6px}.dart-slot strong{font-size:23px}.visit-tally,.console-actions,.console-next,.console-help,.end-visit,.last-hit-banner{grid-column:1/-1}.visit-tally{padding-bottom:11px;margin-bottom:14px}.console-actions .btn{min-height:43px;font-size:11px}.end-visit{font-size:10px;padding:9px}.console-help{margin-top:8px;font-size:9px}.arcade-checkout{padding:19px 5px 0}.arcade-checkout .checkout-route{gap:12px}.arcade-checkout .eyebrow{margin-bottom:10px}.arcade-checkout p{font-size:11px}.arcade-history{margin-top:21px}.visit-table{font-size:10px}.visit-table th,.visit-table td{padding:11px 7px}.visit-table th:nth-child(3){min-width:110px}.fx-caption strong{font-size:76px}.fx-caption small{font-size:10px;letter-spacing:4px}.fx-caption span{font-size:10px}.arcade-fx.maximum .fx-caption strong{font-size:115px}.board-turn-callout>div{padding:18px 22px}.board-turn-callout strong{font-size:25px}.winner-panel{grid-column:1/-1;padding:5px 0}.app-footer{margin-top:25px}.page-top-right .icon-btn{width:33px;height:33px}.scoring-note{margin:10px 0 0}.last-hit-banner{margin-top:0}.console-kicker .tag{font-size:8px}.fx-spark{height:11px}}
+    .board-turn-callout .btn{pointer-events:auto;margin-top:16px;min-height:39px;font-size:11px}.board-mobile-actions{display:none}.fx-caption small{font-size:25px;letter-spacing:4px}.arcade-fx.maximum .fx-caption small{font-size:13px}.arcade-fx.win .fx-caption strong,.arcade-fx.leg .fx-caption strong{font-size:clamp(40px,5.4vw,75px)}
+    @media(max-width:680px){.board-mobile-actions{display:flex;gap:8px;margin:12px 3px 7px}.board-mobile-actions .btn{flex:1;min-height:40px;font-size:11px}.fx-caption small{font-size:22px}.arcade-fx.maximum .fx-caption small{font-size:10px}.arcade-fx.win .fx-caption strong,.arcade-fx.leg .fx-caption strong{font-size:49px}.arcade-fx.bust .fx-caption strong{font-size:54px}}
+    /* Keep opaque labels free of inherited glyph shadows and overlapping strokes. */
+    .fx-caption{text-shadow:none;backface-visibility:hidden}.fx-caption strong{-webkit-text-stroke:0;letter-spacing:-.02em;text-shadow:0 2px 8px #0008}.fx-caption small{text-shadow:0 2px 6px #0009}.fx-caption span{text-shadow:none;-webkit-text-stroke:0;font-weight:700;letter-spacing:1.5px;line-height:1.4}
+    .arcade-player.checked-out:not(.active){opacity:1}.arcade-player .score-number.is-placement{color:var(--orange)}.rank-suffix{font-size:.42em;letter-spacing:.02em;vertical-align:super;margin-left:2px;font-weight:700}.arcade-player.checked-out .playing-label{color:var(--orange)}.finish-rankings{list-style:none;padding:0;margin:18px 0;text-align:left}.finish-rankings li{display:flex;align-items:center;gap:9px;padding:10px 0;border-bottom:1px solid var(--line);font-size:11px}.finish-rankings b{color:var(--orange);font-size:10px;min-width:30px}.finish-rankings span{flex:1;min-width:0;overflow-wrap:anywhere}.finish-rankings small{font-size:9px;color:var(--muted);white-space:nowrap}.rankings-heading{font-size:10px;color:var(--muted);font-weight:500;margin:18px 0 0}.board-turn-callout strong{overflow-wrap:anywhere}.arcade-fx.checkout .fx-caption strong{font-size:clamp(54px,7vw,96px)}.arcade-fx.placements .fx-caption strong,.arcade-fx.leg-end .fx-caption strong{font-size:clamp(40px,5vw,68px)}
+    @media(max-width:680px){.arcade-fx.placements .fx-caption strong,.arcade-fx.leg-end .fx-caption strong{font-size:47px}}
+    @media(prefers-reduced-motion:reduce){.arcade-fx,.board-stage:before{display:none!important}.board-segment.hit-flash{fill:var(--orange)}.interactive-board{filter:none}.screen{animation:none!important}}
 
-          <p id="player-order-hint" class="player-order-hint">
-            Drag to set the throw order. First player throws first.
-          </p>
-          <div
-            id="player-rows"
-            class="player-rows"
-            role="list"
-            aria-describedby="player-order-hint"
-          ></div>
-          <p id="player-order-status" class="visually-hidden" aria-live="polite"></p>
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <button class="brand" data-action="tab" data-tab="match" aria-label="OCHE match room">
+      <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="10" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="3" fill="currentColor"/><path d="M20 0v8m0 24v8M0 20h8m24 0h8" stroke="currentColor" stroke-width="2"/></svg>
+      <div><div class="wordmark">OCHE<span style="color:var(--orange)">.</span></div><div class="brand-sub">ARCADE DARTS / 301</div></div>
+    </button>
+    <nav class="nav" aria-label="Main navigation">
+      <button data-action="tab" data-tab="match" class="active" aria-current="page"><span data-icon="board"></span>Match room</button>
+      <button data-action="tab" data-tab="players"><span data-icon="players"></span>Players</button>
+      <button data-action="tab" data-tab="history"><span data-icon="history"></span>History</button>
+    </nav>
+    <div class="header-actions"><button class="btn sound-toggle" data-action="sound" aria-pressed="false" aria-label="Turn arcade sound on">♪ Sound off</button><span id="save-state" class="save-state" role="status"><span class="dot"></span>Saved on this device</span><button class="btn dark" data-action="new-match"><span data-icon="plus"></span>New match</button></div>
+  </header>
+  <main>
+    <div id="screen"></div>
+    <footer class="app-footer"><span class="footer-brand">A LITTLE FOCUS. A BETTER THROW.</span><div class="footer-links"><span>100% offline. Always your game.</span><button data-action="rules">How to play</button><button data-action="export">Export data</button><button data-action="import">Import</button></div></footer>
+  </main>
+  <dialog id="dialog" aria-labelledby="dialog-title"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="announcement" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <script>
+  'use strict';
+  // OCHE is deliberately self-contained. No requests, dependencies, or build step.
+  const STORAGE_KEY='oche.301.v1';
+  const icons={
+    sound:'<path d="M11 4 5 9H2v6h3l6 5V4Zm4 4a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>',
+    mute:'<path d="M11 4 5 9H2v6h3l6 5V4Zm5 5 6 6m0-6-6 6"/>',
+    plus:'<path d="M12 5v14M5 12h14"/>',
+    arrow:'<path d="M5 12h14m-5-5 5 5-5 5"/>',
+    board:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    players:'<circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v2"/>',
+    history:'<path d="M3 11a9 9 0 1 1 2.5 7M3 4v7h7m2-5v6l4 2"/>',
+    undo:'<path d="m8 4-5 5 5 5M3 9h10a7 7 0 0 1 0 14" transform="translate(0 -2)"/>',
+    backspace:'<path d="M9 5h12v14H9l-7-7 7-7Zm3 4 6 6m0-6-6 6"/>',
+    close:'<path d="m6 6 12 12M6 18 18 6"/>',
+    check:'<path d="m5 12 4 4L19 6"/>',
+    shield:'<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Z"/><path d="m8 12 3 3 5-6"/>',
+    trophy:'<path d="M7 3h10v6a5 5 0 0 1-10 0V3Zm0 2H3v3a5 5 0 0 0 5 5m9-8h4v3a5 5 0 0 1-5 5m-4 1v6m-5 1h10"/>',
+    edit:'<path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14v6Z"/>',
+    list:'<path d="M8 6h12M8 12h12M8 18h12M3 6h.01M3 12h.01M3 18h.01"/>',
+    dart:'<path d="M4 20 17 7m-4 0 1-5 3 5 5 3-5 1M4 20l2-6 4 4-6 2Z"/>',
+    download:'<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>'
+  };
+  const icon=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name]||icons.board}</svg>`;
+  const $=(selector)=>document.querySelector(selector);
+  const esc=(value)=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const uid=()=>globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
+  const initials=name=>name.trim().split(/\s+/).slice(0,2).map(n=>Array.from(n)[0]).join('').toUpperCase();
+  const dateLabel=value=>new Date(value).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+  let data,tab='match',toastTimer,storageOK=true,pendingImport=null,precisionMultiplier='S',precisionOpen=false,boardFocus='T20',fxTimer,audioContext;
+  const singles=Array.from({length:20},(_,i)=>({value:i+1,label:`S${i+1}`,double:false}));
+  const doubles=Array.from({length:20},(_,i)=>({value:(i+1)*2,label:`D${i+1}`,double:true}));
+  const trebles=Array.from({length:20},(_,i)=>({value:(i+1)*3,label:`T${i+1}`,double:false})).reverse();
+  const allHits=[...trebles,...singles.slice().reverse(),...doubles.slice().reverse(),{value:25,label:'25',double:false},{value:50,label:'BULL',double:true}];
+  const hitValues=[...new Set([0,...allHits.map(h=>h.value)])];
+  const possible=[new Set([0])];
+  for(let n=1;n<=3;n++){possible[n]=new Set();for(const a of possible[n-1])for(const b of hitValues)possible[n].add(a+b);}
+  const preferredDoubles=[16,20,8,12,10,18,6,4,14,2,15,5,9,7,3,1,19,17,13,11].map(n=>doubles[n-1]);
+  const finishCache=new Map();
+  function checkout(score,out,maxDarts=3){
+    const key=`${score}/${out}/${maxDarts}`;if(finishCache.has(key))return finishCache.get(key);
+    const finishes=out==='double'?[...preferredDoubles,{value:50,label:'BULL',double:true}]:[...preferredDoubles,...allHits];
+    let result=null;
+    for(let n=1;n<=maxDarts&&!result;n++){
+      function search(left,remaining,path){
+        if(remaining===1){const f=finishes.find(h=>h.value===left);return f?[...path,f]:null;}
+        for(const hit of allHits){if(left-hit.value<1||(out==='double'&&left-hit.value<2))continue;const found=search(left-hit.value,remaining-1,[...path,hit]);if(found)return found;}
+        return null;
+      }
+      result=search(score,n,[]);
+    }
+    finishCache.set(key,result);return result;
+  }
+  function makeMatch(players,out='double',bestOf=1){return {id:uid(),startedAt:new Date().toISOString(),players:players.map(p=>({id:p.id,name:p.name})),out,bestOf,finishMode:players.length>2?'placements':'first',visits:[],pending:[],awaitingNext:false,abandoned:false};}
+  function freshData(){const players=[{id:uid(),name:'Player 1'},{id:uid(),name:'Player 2'}];const match=makeMatch(players);return {version:1,players,matches:[match],currentId:match.id};}
+  function derive(match){
+    const count=match.players.length,ranked=count>2&&match.finishMode==='placements';
+    let scores=Array(count).fill(301),wins=Array(count).fill(0),turn=0,leg=1,round=1,winner=null,finishOrder=[];
+    const stats=match.players.map(()=>({points:0,darts:0,best:0,visits:0})),rows=[],legResults=[];
+    const nextEligible=from=>{for(let step=1;step<=count;step++){const candidate=(from+step)%count;if(scores[candidate]>0)return candidate;}return from;};
+    for(const visit of match.visits){
+      if(winner!==null)break;
+      const player=turn,before=scores[player],remaining=before-visit.total;
+      const bust=visit.bust||remaining<0||(match.out==='double'&&(remaining===1||(remaining===0&&!visit.double)));
+      const credited=bust?0:visit.total;
+      scores[player]-=credited;stats[player].points+=credited;stats[player].darts+=visit.darts;stats[player].visits++;stats[player].best=Math.max(stats[player].best,credited);
+      const won=scores[player]===0;
+      if(won){finishOrder.push(player);if(finishOrder.length===1)wins[player]++;}
+      const legFinished=won&&(!ranked||visit.legacyLegEnd===true||finishOrder.length===count-1);
+      rows.push({...visit,player,before,remaining:scores[player],credited,bust,won,leg,round,placement:won?finishOrder.length:null,legFinished});
+      if(legFinished){
+        const legWinner=finishOrder[0],remainingPlayers=scores.map((score,i)=>score>0?i:null).filter(i=>i!==null);
+        legResults.push({leg,winner:legWinner,order:[...finishOrder,...remainingPlayers],scores:[...scores],fullPlacements:ranked&&!visit.legacyLegEnd});
+        if(wins[legWinner]>=Math.ceil(match.bestOf/2)){winner=legWinner;}
+        else{leg++;scores=Array(count).fill(301);finishOrder=[];turn=(leg-1)%count;round=1;}
+      }else{
+        const next=nextEligible(turn),starter=(leg-1)%count;
+        if((next-starter+count)%count<=(turn-starter+count)%count)round++;
+        turn=next;
+      }
+    }
+    return {scores,wins,turn,leg,winner,stats,rows,round,ranked,finishOrder,legResults,nextTurn:nextEligible(turn)};
+  }
+  function validData(value){
+    if(!value||value.version!==1||!Array.isArray(value.players)||!Array.isArray(value.matches)||value.players.length>1000||value.matches.length>10000)return false;
+    const validName=n=>typeof n==='string'&&n.trim().length>0&&n.length<=32;
+    const validId=id=>typeof id==='string'&&id.length>0&&id.length<=100;
+    const validPositions=(positions,hits)=>positions===undefined||(Array.isArray(positions)&&Array.isArray(hits)&&positions.length===hits.length&&positions.every(p=>p===null||validBoardPosition(p)));
+    if(!value.players.every(p=>p&&validId(p.id)&&validName(p.name))||new Set(value.players.map(p=>p.id)).size!==value.players.length)return false;
+    if(!value.matches.every(m=>m&&validId(m.id)&&Number.isFinite(Date.parse(m.startedAt))&&['double','straight'].includes(m.out)&&[1,3,5].includes(m.bestOf)&&typeof m.abandoned==='boolean'&&Array.isArray(m.players)&&m.players.length>=1&&m.players.length<=8&&m.players.every(p=>p&&validId(p.id)&&validName(p.name))&&new Set(m.players.map(p=>p.id)).size===m.players.length&&Array.isArray(m.visits)&&m.visits.length<=100000&&m.visits.every(v=>v&&Number.isInteger(v.total)&&v.total>=0&&v.total<=180&&[1,2,3].includes(v.darts)&&typeof v.bust==='boolean'&&typeof v.double==='boolean'&&(v.bust||possible[v.darts].has(v.total)))))return false;
+    if(new Set(value.matches.map(m=>m.id)).size!==value.matches.length||!value.matches.some(m=>m.id===value.currentId&&!m.abandoned))return false;
+    // Replay imported events to reject throws after a winner and impossible finishes.
+    for(const match of value.matches){const game=derive(match);if(game.rows.length!==match.visits.length)return false;for(const row of game.rows){if(row.won&&!checkout(row.total,match.out,row.darts))return false;}}
 
-          <fieldset class="out-mode">
-            <legend>Finish rule</legend>
-            <label>
-              <input type="radio" name="outMode" value="straight" checked />
-              <span>Straight out</span>
-            </label>
-            <label>
-              <input type="radio" name="outMode" value="double" />
-              <span>Double out</span>
-            </label>
-          </fieldset>
+    for(const m of value.matches){
+      if(m.finishMode!==undefined&&!['first','placements'].includes(m.finishMode))return false;
+      if(m.visits.some(v=>v.legacyLegEnd!==undefined&&typeof v.legacyLegEnd!=='boolean'))return false;
+      if(m.awaitingNext!==undefined&&typeof m.awaitingNext!=='boolean')return false;
+      if(m.pending!==undefined&&(!Array.isArray(m.pending)||m.pending.length>2||!m.pending.every(c=>typeof c==='string'&&hitFromCode(c))))return false;
+      const game=derive(m),pending=pendingHits(m);
+      if(!validPositions(m.pendingPositions,pending)||m.visits.some(v=>!validPositions(v.positions,v.hits)))return false;
+      if((game.winner!==null||m.awaitingNext)&&pending.length)return false;
+      if(m.awaitingNext&&(!m.visits.length||game.winner!==null))return false;
+      if(pending.length&&hitSequence(game.scores[game.turn],pending,m.out).terminalAt!==-1)return false;
+      for(const row of game.rows){
+        if(row.hits===undefined)continue;
+        if(!Array.isArray(row.hits)||row.hits.length!==row.darts||!row.hits.every(c=>typeof c==='string'&&hitFromCode(c)))return false;
+        const sequence=hitSequence(row.before,row.hits,m.out);
+        if(sequence.total!==row.total||sequence.bust!==row.bust||sequence.won!==row.won||row.double!==hitFromCode(row.hits.at(-1)).double)return false;
+        if(sequence.terminalAt!==-1&&sequence.terminalAt!==row.hits.length-1)return false;
+      }
+    }
+    return true;
+  }
+  function upgradeCurrentMatch(value){
+    const m=value.matches.find(m=>m.id===value.currentId);
+    if(!m||m.players.length<=2||m.finishMode==='placements')return value;
+    // Preserve already-played legacy leg boundaries; finish the current leg for placements.
+    const old=derive(m);
+    old.rows.forEach((row,i)=>{if(row.won&&(old.winner===null||i<old.rows.length-1))m.visits[i].legacyLegEnd=true;});
+    m.finishMode='placements';
+    if(old.winner!==null)m.awaitingNext=true;
+    return value;
+  }
+  let loadWarning='';
+  try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const parsed=JSON.parse(raw);if(!validData(parsed))throw new Error('Invalid saved data');data=upgradeCurrentMatch(parsed);}else data=freshData();}
+  catch(e){data=freshData();storageOK=false;loadWarning='Saved data could not be loaded. Export this session before closing.';}
+  function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));storageOK=true;}catch(e){storageOK=false;toast('Storage is unavailable or full. Export your data to keep it.');}updateSaved();}
+  function updateSaved(){const state=$('#save-state');state.classList.toggle('error',!storageOK);state.innerHTML=`<span class="dot"></span>${storageOK?'Saved on this device':'Not saved · export data'}`;const note=$('.scoring-note');if(note){note.classList.toggle('error',!storageOK);note.innerHTML=`${icon('shield')}${storageOK?'Every dart saved on this device.':'Not saved. Export your data before closing this tab.'}`;}}
+  const current=()=>data.matches.find(m=>m.id===data.currentId);
+  const avg=stat=>stat.darts?(stat.points/stat.darts*3).toFixed(1):'—';
+  function toast(message){$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3500);}
+  function announce(message){$('#announcement').textContent=message;}
 
-          <button type="submit" class="primary-button">Start 301</button>
-        </form>
-      </section>
+  const boardNumbers=[20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5];
+  function hitFromCode(code){return code==='MISS'?{value:0,label:'MISS',double:false}:allHits.find(h=>h.label===code);}
+  function hitKind(code){return code==='BULL'||code==='25'?'bull':code.startsWith('T')?'triple':code.startsWith('D')?'double':code==='MISS'?'miss':'single';}
+  function hitName(code){if(code==='BULL')return 'Bullseye';if(code==='25')return 'Outer bull';if(code==='MISS')return 'Miss';return `${{S:'Single',D:'Double',T:'Triple'}[code[0]]} ${code.slice(1)}`;}
+  function pendingHits(m){return m.pending||[];}
+  function validBoardPosition(p){return p!==null&&typeof p==='object'&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=560&&p.y>=0&&p.y<=560;}
+  function positionsFor(hits,positions){return hits.map((_,i)=>positions?.[i]||null);}
+  function boardClickPosition(event,target){
+    if(!target.matches('.board-segment')||event.detail===0)return null;
+    const svg=target.ownerSVGElement,matrix=svg?.getScreenCTM();if(!matrix)return null;
+    // Convert viewport coordinates to the board's own coordinates, including CSS transforms.
+    const point=svg.createSVGPoint();point.x=event.clientX;point.y=event.clientY;
+    const local=point.matrixTransform(matrix.inverse());
+    return validBoardPosition(local)?{x:local.x,y:local.y}:null;
+  }
+  function hitSequence(start,codes,out){
+    let remaining=start,bust=false,won=false,terminalAt=-1;
+    for(let i=0;i<codes.length;i++){
+      const h=hitFromCode(codes[i]);if(!h)return null;
+      remaining-=h.value;
+      bust=remaining<0||(out==='double'&&(remaining===1||(remaining===0&&!h.double)));
+      won=!bust&&remaining===0;
+      if(bust||won){terminalAt=i;break;}
+    }
+    return {remaining:bust?start:remaining,bust,won,terminalAt,total:codes.reduce((sum,c)=>sum+hitFromCode(c).value,0)};
+  }
+  function liveGame(m){
+    const g=derive(m),hits=pendingHits(m);
+    if(hits.length&&g.winner===null){
+      const preview=hitSequence(g.scores[g.turn],hits,m.out),stat=g.stats[g.turn];
+      g.scores[g.turn]=preview.remaining;stat.points+=preview.total;stat.darts+=hits.length;
+    }
+    return g;
+  }
+  function historyRows(m){
+    const g=derive(m),hits=pendingHits(m);
+    if(hits.length){const sequence=hitSequence(g.scores[g.turn],hits,m.out);g.rows.push({player:g.turn,leg:g.leg,round:g.round,hits,darts:hits.length,total:sequence.total,credited:sequence.total,remaining:sequence.remaining,partial:true});}
+    return g.rows;
+  }
+  function interactiveBoard(hits,locked,route,positions=[]){
+    const point=(r,a)=>[280+r*Math.sin(a*Math.PI/180),280-r*Math.cos(a*Math.PI/180)];
+    const sector=(inner,outer,a,b)=>{const p=point(outer,a),q=point(outer,b),r=point(inner,b),s=point(inner,a);return `M${p} A${outer} ${outer} 0 0 1 ${q} L${r} A${inner} ${inner} 0 0 0 ${s}Z`;};
+    const recommended=new Set((route||[]).map(h=>h.label));
+    const target=(code,shape,fill,inner=false)=>`<${shape} fill="${fill}" class="board-segment ${recommended.has(code)?'recommended':''}" data-action="hit" data-code="${code}" data-inner="${inner}" role="button" tabindex="${!locked&&!inner&&boardFocus===code?'0':'-1'}" aria-label="${hitName(code)}, ${hitFromCode(code).value} points" aria-disabled="${locked}"/>`;
+    let segments='',labels='',ticks='';
+    boardNumbers.forEach((n,i)=>{
+      const a=i*18-9,b=a+18,dark=i%2===0,single=dark?'#222b35':'#d3d0b9',ring=dark?'#d17455':'#71bba0';
+      segments+=target(`S${n}`,`path d="${sector(26,128,a,b)}"`,single,true);
+      segments+=target(`T${n}`,`path d="${sector(128,147,a,b)}"`,ring);
+      segments+=target(`S${n}`,`path d="${sector(147,213,a,b)}"`,single);
+      segments+=target(`D${n}`,`path d="${sector(213,235,a,b)}"`,ring);
+      const p=point(253,i*18);labels+=`<text x="${p[0]}" y="${p[1]+6}" text-anchor="middle" class="board-label">${n}</text>`;
+      const x=point(269,i*18-9),y=point(272,i*18-9);ticks+=`<path d="M${x}L${y}" stroke="#b4ec61" stroke-width="2"/>`;
+    });
+    segments+=target('25','circle cx="280" cy="280" r="26"','#71bba0');
+    segments+=target('BULL','circle cx="280" cy="280" r="12"','#d17455');
+    const markers=hits.map((code,i)=>{
+      if(code==='MISS')return '';
+      const n=Number(code.slice(1)),angle=boardNumbers.indexOf(n)*18,rad=code[0]==='T'?138:code[0]==='D'?224:179;
+      const p=code==='BULL'?[280,280]:code==='25'?[280,260]:point(rad,angle);
+      const x=positions[i]?.x??p[0],y=positions[i]?.y??p[1];
+      return `<g class="dart-pin" transform="translate(${x} ${y})"><circle r="7" fill="#090f17" stroke="#fff" stroke-width="2"/><path d="M0 0 15-23" stroke="#f6fded" stroke-width="3"/><path d="m14-21 2-13 8 5-10 8Z" fill="#c5f56b"/><circle r="2" fill="#c5f56b"/></g>`;
+    }).join('');
+    return `<svg class="interactive-board ${locked?'locked':''}" viewBox="0 0 560 560" role="group" aria-label="Interactive dartboard. Use arrow keys between segments, Enter to score. Precision entry is available below."><defs><radialGradient id="board-rim"><stop offset="80%" stop-color="#202a34"/><stop offset="94%" stop-color="#0e141d"/><stop offset="100%" stop-color="#36434b"/></radialGradient></defs><circle cx="280" cy="280" r="277" fill="url(#board-rim)" stroke="#435143" stroke-width="1"/><circle cx="280" cy="280" r="269" fill="none" stroke="#a2dc552f" stroke-width="1"/>${ticks}<circle cx="280" cy="280" r="238" fill="#111922" stroke="#74818b" stroke-width="2"/>${segments}${labels}${markers}</svg>`;
+  }
+  function visitsTable(match,rows,limit=30){
+    if(!rows.length)return `<div class="empty-visits">${icon('dart')}<p><strong>The board is yours.</strong><br>Tap a segment to log your first dart.</p></div>`;
+    return `<div class="table-wrap"><table class="visit-table"><thead><tr><th>Leg / Rd</th><th>Player</th><th>Darts</th><th>Score</th><th>Left</th></tr></thead><tbody>${rows.slice(-limit).reverse().map(row=>`<tr><td>${row.leg} / ${String(row.round).padStart(2,'0')}</td><td>${esc(match.players[row.player].name)}</td><td>${row.hits?row.hits.map(c=>`<span class="hit-code ${hitKind(c)}" title="${hitName(c)}">${c}</span>`).join(''):`${row.darts} darts · total entry`}${row.partial?' <span class="muted">…</span>':''}</td><td class="visit-score ${row.bust?'bust-text':''}">${row.bust?'BUST':row.total}${row.won?' <span class="bust-text">↗ OUT</span>':''}</td><td class="mono">${row.remaining}</td></tr>`).join('')}</tbody></table></div>`;
+  }
+  function ordinal(place){return `${place}${place===1?'ST':place===2?'ND':place===3?'RD':'TH'}`;}
+  function rosterStatus(g,i,active,waiting,finished){
+    if(g.ranked){
+      if(finished){const position=g.legResults.at(-1).order.indexOf(i)+1;return `${ordinal(position)} · ${g.scores[i]===0?'CHECKED OUT':'NOT OUT'}`;}
+      const position=g.finishOrder.indexOf(i);if(position>=0)return `${ordinal(position+1)} · CHECKED OUT`;
+    }
+    return finished?(i===g.winner?'MATCH WINNER':'FINISHED'):i===active?(waiting?'VISIT COMPLETE':'● THROWING'):i===g.turn||(!waiting&&i===g.nextTurn)?'UP NEXT':'WAITING';
+  }
+  function rankingsMarkup(m,result){
+    if(!result?.fullPlacements)return '';
+    return `<h3 class="rankings-heading">Leg ${result.leg} · Final standings</h3><ol class="finish-rankings">${result.order.map((i,place)=>`<li><b>${ordinal(place+1)}</b><span>${esc(m.players[i].name)}</span><small>${result.scores[i]===0?'Checked out':`${result.scores[i]} left`}</small></li>`).join('')}</ol>`;
+  }
+  function rosterScore(g,i){
+    if(g.scores[i]!==0)return String(g.scores[i]);
+    const place=g.finishOrder.indexOf(i)+1;
+    return `${place}<span class="rank-suffix">${ordinal(place).replace(String(place),'')}</span>`;
+  }
+  function renderMatch(){
+    const m=current(),g=liveGame(m),finished=g.winner!==null,waiting=!!m.awaitingNext&&!finished,last=g.rows.at(-1);
+    const active=finished?g.winner:waiting?last.player:g.turn,player=m.players[active],hits=waiting||finished?(last?.hits||[]):pendingHits(m);
+    const locked=waiting||finished,remaining=waiting?last.remaining:g.scores[active],total=hits.reduce((sum,c)=>sum+hitFromCode(c).value,0);
+    const route=!locked?checkout(remaining,m.out,3-hits.length):null;
+    const rows=historyRows(m),lastCode=hits.at(-1);
+    const roster=m.players.map((p,i)=>`<section class="arcade-player ${i===active?'active':''} ${g.scores[i]===0?'checked-out':''}" aria-label="${esc(p.name)}, ${g.scores[i]===0?ordinal(g.finishOrder.indexOf(i)+1)+' place, checked out':g.scores[i]+' remaining'}"><span class="avatar">${esc(initials(p.name))}</span><div><span class="player-name" title="${esc(p.name)}">${esc(p.name)}</span><span class="playing-label">${rosterStatus(g,i,active,waiting,finished)}</span></div><div class="score-number ${g.scores[i]===0?'is-placement':''}" data-player-score="${i}" data-score-value="${g.scores[i]}">${rosterScore(g,i)}</div><div class="roster-meta"><span>AVG <strong>${avg(g.stats[i])}</strong></span><span>LEGS <strong>${g.wins[i]} / ${Math.ceil(m.bestOf/2)}</strong></span></div></section>`).join('');
+    const tray=Array.from({length:3},(_,i)=>{const code=hits[i],h=code?hitFromCode(code):null;return `<div class="dart-slot ${h?`filled ${hitKind(code)}`:!locked&&i===hits.length?'next':''}"><span>DART ${i+1}</span><strong>${h?code:'—'}</strong>${h?`<em>${h.value} POINT${h.value===1?'':'S'}</em>`:''}</div>`;}).join('');
+    const nextName=m.players[g.turn].name;
+    $('#screen').innerHTML=`<div class="screen arcade-screen"><div class="page-top"><div><div class="breadcrumb"><span>Play</span><span>/</span><span>Match room</span></div><h1>301<span>ARCADE MODE</span></h1></div><div class="page-top-right"><span class="tag match-status"><span class="dot"></span>${finished?'GAME OVER':'LIVE MATCH'}</span><button class="icon-btn" data-action="rules" aria-label="Game rules">${icon('board')}</button></div></div>
+      <div class="arcade-layout"><aside class="arcade-players"><div class="section-label"><h2>The lineup</h2><span>${m.players.length} / 8</span></div><div class="arcade-roster ${m.players.length>2?'many':''}" aria-label="Player scoreboard">${roster}</div><div class="roster-rule"><span class="tag">LEG ${String(g.leg).padStart(2,'0')} · ROUND ${String(g.round).padStart(2,'0')}</span><br><strong>Straight in · ${m.out==='double'?'Double':'Straight'} out</strong><br>${m.bestOf===1?'Single leg':`First to ${Math.ceil(m.bestOf/2)} legs`} · ${m.players.length===1?'Solo practice':`${m.players.length} players`}</div></aside>
+      <section class="arcade-board-column" aria-label="Dartboard scoring"><div class="board-topline"><h2>${locked?'Visit complete':'Tap where your dart landed.'}</h2><span class="eyebrow">${locked?'BOARD PAUSED':`DART ${hits.length+1} OF 3`}</span></div><div class="board-stage">${interactiveBoard(hits,locked,route,locked?(last?.positions||[]):(m.pendingPositions||[]))}${locked?`<div class="board-turn-callout"><div><span class="eyebrow">${finished?'MATCH WINNER':last.bust?'BUST · VISIT RESET':last.won?(g.ranked?(last.legFinished?'LEG COMPLETE':ordinal(last.placement)+' PLACE · CHECKED OUT'):'LEG WON'):'VISIT COMPLETE'}</span><strong>${finished?esc(player.name):last.bust?'Shake it off.':last.won?'Game shot.':`${last.total} points`}</strong><small>${finished?'Good darts. Play again?':`Next up: ${esc(nextName)}`}</small>${!finished?`<button class="btn primary" data-action="next-player">${m.players.length===1?'Next visit':'Next player'} ${icon('arrow')}</button>`:''}</div></div>`:''}<div id="fx-host" aria-hidden="true"></div></div><div class="board-mobile-actions"><button class="btn" data-action="undo" ${m.visits.length||pendingHits(m).length?'':'disabled'}>${icon('undo')}Undo dart</button><button class="btn" data-action="hit" data-code="MISS" ${locked?'disabled':''}>${icon('close')}Miss · 0</button></div><div class="board-legend"><span><i class="legend-dot"></i>Single ×1</span><span><i class="legend-dot double"></i>Outer ring ×2</span><span><i class="legend-dot triple"></i>Inner ring ×3</span><span><i class="legend-dot bull"></i>Bull 50</span></div><p class="board-instruction">${m.out==='double'?'Finish on a double or bullseye.':'Any scoring segment can finish.'} Every dart is saved.</p><details class="precision-entry" ${precisionOpen?'open':''}><summary>Precision entry · larger tap targets</summary><div class="precision-controls" role="group" aria-label="Score multiplier">${['S','D','T'].map(c=>`<button data-action="multiplier" data-value="${c}" class="${precisionMultiplier===c?'active':''}" aria-pressed="${precisionMultiplier===c}">${{S:'Single',D:'Double',T:'Triple'}[c]}</button>`).join('')}</div><div class="precision-grid">${Array.from({length:20},(_,i)=>`<button data-action="hit" data-code="${precisionMultiplier}${i+1}" ${locked?'disabled':''} aria-label="${hitName(`${precisionMultiplier}${i+1}`)}">${i+1}</button>`).join('')}</div><div class="precision-specials"><button class="btn" data-action="hit" data-code="25" ${locked?'disabled':''}>Outer bull · 25</button><button class="btn" data-action="hit" data-code="BULL" ${locked?'disabled':''}>Bullseye · 50</button></div></details></section>
+      <aside class="arcade-console-column"><section class="dart-console" aria-label="Current visit">${finished?`<div class="winner-panel">${icon('trophy')}<span class="eyebrow">That's the match</span><h2>${esc(player.name)} wins.</h2><p>${g.wins.join(' – ')} in legs · ${g.rows.length} visits</p>${g.ranked?rankingsMarkup(m,g.legResults.at(-1)):''}<button class="btn primary" data-action="rematch">Play again ${icon('arrow')}</button><button class="btn" data-action="undo">${icon('undo')}${g.ranked?'Undo final checkout':'Undo winning dart'}</button><button class="btn subtle" data-action="tab" data-tab="history">View match history</button></div>`:`<div class="console-kicker"><span class="eyebrow">${waiting?'Visit complete':'At the oche'}</span><span class="tag">LEG ${String(waiting?last.leg:g.leg).padStart(2,'0')}</span></div><h2 class="console-player">${esc(player.name)}</h2><div class="console-score" data-live-score>${remaining}</div><div class="console-score-caption">Points remaining</div><div class="dart-tray" aria-label="Darts this visit">${tray}</div><div class="visit-tally"><span>Visit total</span><strong class="${waiting&&last.bust?'busted':''}">${waiting&&last.bust?'BUST':total}</strong></div>${waiting?`<button class="btn primary console-next" data-action="next-player"><span>${m.players.length===1?'Next visit':'Next player'}</span>${icon('arrow')}</button>`:''}<div class="console-actions"><button class="btn" data-action="undo" ${m.visits.length||pendingHits(m).length?'':'disabled'}>${icon('undo')}Undo dart</button><button class="btn" data-action="hit" data-code="MISS" ${locked?'disabled':''}>${icon('close')}Miss · 0</button></div>${!waiting?`<button class="end-visit" data-action="end-visit" ${!hits.length?'disabled':''}>End visit early ${icon('arrow').replace('<svg ','<svg style="display:inline;width:10px;height:10px;vertical-align:middle" ')}</button>`:''}<div class="last-hit-banner ${lastCode?hitKind(lastCode):''}"><span>Last dart</span><strong>${lastCode?hitName(lastCode).toUpperCase():'READY WHEN YOU ARE'}</strong></div><p class="console-help">${waiting?`Board paused. Pass to ${esc(nextName)} when ready.`:'Tap the board or use precision entry.<br>Ctrl / ⌘ Z undoes the last dart.'}</p>`}</section><section class="arcade-checkout" aria-label="Checkout suggestion"><div class="eyebrow">${locked?'Next on the board':route?'Checkout route':'Checkout guide'}</div>${locked?`<h3>${finished?'Match complete. Nicely thrown.':`${esc(nextName)} · ${g.scores[g.turn]} remaining`}</h3><p>${finished?'Every dart kept in your match history.':`Leg ${g.leg} · ${m.out==='double'?'Double':'Straight'} out`}</p>`:route?`<div class="checkout-route">${route.map(h=>`<span>${h.label}</span>`).join('<i>→</i>')}</div><p>${remaining} to finish in ${route.length} dart${route.length===1?'':'s'}. Suggested segments glow on the board.</p>`:`<h3>Build your next finish.</h3><p>No checkout with ${3-hits.length} dart${3-hits.length===1?'':'s'} left. Keep scoring.</p>`}</section><p class="scoring-note">${icon('shield')}Every dart saved on this device.</p></aside></div>
+      <section class="arcade-history"><div class="visits-heading"><h2>Visit log</h2><span class="tag">${g.rows.length} visits${pendingHits(m).length?' · visit in progress':''}${rows.length>30?' · latest 30':''}</span></div>${visitsTable(m,rows)}</section></div>`;
+    $('.precision-entry').addEventListener('toggle',event=>{precisionOpen=event.target.open;});
+  }
+  function playerStats(id){
+    let played=0,wins=0,points=0,dartCount=0,best=0;
+    for(const m of data.matches){const i=m.players.findIndex(p=>p.id===id);if(i<0)continue;const g=liveGame(m);if(g.winner!==null){played++;if(g.winner===i)wins++;}points+=g.stats[i].points;dartCount+=g.stats[i].darts;best=Math.max(best,g.stats[i].best);}
+    return {played,wins,average:dartCount?(points/dartCount*3).toFixed(1):'—',best};
+  }
+  function renderPlayers(){
+    $('#screen').innerHTML=`<div class="screen"><div class="page-top screen-top"><div><div class="breadcrumb"><span>Club</span><span>/</span><span>Players</span></div><h1>Players.</h1><p>Saved players. Every match adds to their story.</p></div><button class="btn dark" data-action="add-player">${icon('plus')}Add player</button></div><div class="profile-grid">${data.players.map(p=>{const s=playerStats(p.id);return `<section class="profile"><div class="profile-head"><span class="avatar">${esc(initials(p.name))}</span><h2>${esc(p.name)}</h2><button class="icon-btn" data-action="edit-player" data-id="${esc(p.id)}" aria-label="Edit ${esc(p.name)}">${icon('edit')}</button></div><div class="profile-stats"><div><strong>${s.played}</strong><span>Matches</span></div><div><strong>${s.wins}</strong><span>Wins</span></div><div><strong>${s.average}</strong><span>3-dart avg.</span></div></div><div class="profile-foot">Best visit: ${s.best||'—'} <span style="margin:0 8px">·</span> ${s.played?Math.round(s.wins/s.played*100):0}% win rate</div></section>`;}).join('')}</div>${!data.players.length?'<div class="empty-screen"><h2>Your first player starts here.</h2><p>Add a name to join the next match.</p></div>':''}<p class="muted" style="font-size:10px;margin-top:32px;line-height:1.7">Matches and wins count completed games. Averages and best visits include all saved games.</p></div>`;
+  }
+  function renderHistory(){
+    const matches=data.matches.filter(m=>m.visits.length||pendingHits(m).length).slice().reverse();
+    $('#screen').innerHTML=`<div class="screen"><div class="page-top screen-top"><div><div class="breadcrumb"><span>Club</span><span>/</span><span>History</span></div><h1>Match history.</h1><p>${matches.length} saved match${matches.length===1?'':'es'} · Your record, on this device.</p></div><button class="btn" data-action="export">${icon('download')}Export data</button></div>${matches.length?`<div class="history-list">${matches.map(m=>{const g=derive(m);return `<button class="history-item" data-action="match-detail" data-id="${esc(m.id)}"><div class="history-date">${esc(dateLabel(m.startedAt))}<br>${new Date(m.startedAt).getFullYear()}</div><div class="history-main"><strong>${m.players.map(p=>esc(p.name)).join(' <span style="margin:0 7px">vs</span> ')}</strong><span>301 · ${m.out==='double'?'Double':'Straight'} out · ${g.rows.length} visits</span></div><div class="history-result">${g.winner!==null?`${esc(m.players[g.winner].name)} won`:m.abandoned?'Ended early':'In progress'}<small>${g.wins.join(' – ')} in legs</small></div>${icon('arrow')}</button>`;}).join('')}</div>`:`<div class="empty-screen">${icon('history')}<h2>The board is a blank slate.</h2><p>Your matches will appear here after the first visit.</p><button class="btn dark" data-action="tab" data-tab="match">Go to match room ${icon('arrow')}</button></div>`}</div>`;
+  }
+  function render(){document.querySelectorAll('.nav button').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);if(b.dataset.tab===tab)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});if(tab==='match')renderMatch();else if(tab==='players')renderPlayers();else renderHistory();updateSaved();updateSound();if(tab==='match')$('.screen').style.animation='none';}
 
-      <section id="game-view" class="game-view" hidden>
-        <header class="match-header">
-          <div>
-            <p id="match-meta" class="eyebrow">301</p>
-            <h1 id="current-player">Noob</h1>
-          </div>
-          <div class="header-actions">
-            <div class="audio-controls">
-              <button
-                id="sound-toggle"
-                type="button"
-                class="ghost-button sound-toggle"
-                aria-pressed="false"
-                aria-label="Mute sound"
-              >
-                Sound on
-              </button>
-              <label class="volume-control" for="sound-volume">
-                <span>Volume</span>
-                <input
-                  id="sound-volume"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value="0.8"
-                />
-              </label>
-            </div>
-            <button id="undo-button" type="button" class="ghost-button">Undo</button>
-            <button id="new-game" type="button" class="ghost-button">New</button>
-          </div>
-        </header>
+  function finishDartVisit(m){
+    const g=derive(m),hits=pendingHits(m),sequence=hitSequence(g.scores[g.turn],hits,m.out);
+    if(!hits.length)return;
+    m.visits.push({total:sequence.total,darts:hits.length,bust:sequence.bust,double:hitFromCode(hits.at(-1)).double,hits:[...hits],positions:positionsFor(hits,m.pendingPositions)});
+    m.pending=[];m.pendingPositions=[];m.awaitingNext=derive(m).winner===null;
+  }
+  function recordDart(code,position=null){
+    const m=current(),before=liveGame(m),hit=hitFromCode(code);
+    if(!hit||m.awaitingNext||before.winner!==null||$('#dialog').open)return;
+    precisionOpen=$('.precision-entry')?.open||false;
+    const player=before.turn;
+    m.pendingPositions=[...positionsFor(pendingHits(m),m.pendingPositions),validBoardPosition(position)?{x:position.x,y:position.y}:null];
+    m.pending=[...pendingHits(m),code];
+    const sequence=hitSequence(derive(m).scores[player],m.pending,m.out);
+    const terminal=sequence.bust||sequence.won||m.pending.length===3;
+    const hits=[...m.pending];if(terminal)finishDartVisit(m);
+    const after=liveGame(m);save();render();
+    const type=sequence.bust?'bust':after.winner!==null?(after.ranked?'placements':'win'):sequence.won?(after.ranked?(after.rows.at(-1).legFinished?'leg-end':'checkout'):'leg'):sequence.total===180&&hits.length===3?'maximum':hitKind(code);
+    animateHit(code,type,sequence.total);
+    if(sequence.won)celebrate();
+    const score=$(`[data-player-score="${player}"]`);if(score)score.classList.add('score-pop');
+    $('[data-live-score]')?.classList.add('score-pop');
+    announce(`${m.players[player].name}: ${hitName(code)}, ${hit.value} points. ${sequence.bust?'Bust. Visit reset.':`${sequence.remaining} remaining.`} ${terminal?(after.winner!==null?'Match won.':'Visit complete. Select next player when ready.'):`Dart ${hits.length+1} of 3.`}`);
+  }
+  function endVisit(){const m=current();if(!pendingHits(m).length||m.awaitingNext||derive(m).winner!==null)return;finishDartVisit(m);save();render();announce('Visit complete. Select next player when ready.');}
+  function nextPlayer(){const m=current();if(!m.awaitingNext)return;m.awaitingNext=false;save();render();const g=liveGame(m);announce(`${m.players[g.turn].name} to throw. ${g.scores[g.turn]} remaining.`);}
+  function undo(){
+    const m=current();let code,name;
+    if(pendingHits(m).length){name=m.players[derive(m).turn].name;m.pendingPositions=positionsFor(m.pending,m.pendingPositions);code=m.pending.pop();m.pendingPositions.pop();}
+    else if(m.visits.length){const last=derive(m).rows.at(-1);name=m.players[last.player].name;m.visits.pop();if(last.hits){code=last.hits.at(-1);m.pending=last.hits.slice(0,-1);m.pendingPositions=positionsFor(last.hits,last.positions).slice(0,-1);}else{m.pending=[];m.pendingPositions=[];code=null;}}
+    else return toast('No darts to undo yet.');
+    m.awaitingNext=false;save();render();toast(`${name}: ${code?hitName(code)+' undone.':'previous total-entry visit undone.'}`);announce('Last dart undone. Score, turn, and match state restored.');
+  }
+  function animateHit(code,type,total){
+    clearTimeout(fxTimer);
+    document.querySelectorAll('.board-segment').forEach(el=>{if(el.dataset.code===code)el.classList.add('hit-flash');});
+    const hit=hitFromCode(code),special={double:['DOUBLE',`+${hit.value}`,'2 × '+code.slice(1)],triple:['TRIPLE',`+${hit.value}`,'3 × '+code.slice(1)],bull:[code==='BULL'?'BULLSEYE':'OUTER BULL',`+${hit.value}`,code==='BULL'?'DEAD CENTER':'ON TARGET'],checkout:['CHECKED OUT',ordinal(derive(current()).rows.at(-1)?.placement||1),'PLACE SECURED'],'leg-end':['FINAL CHECKOUT','LEG OVER','ALL PLACES DECIDED'],placements:['FINAL CHECKOUT','GAME OVER','STANDINGS COMPLETE'],maximum:['ONE HUNDRED & EIGHTY','180','MAXIMUM'],bust:['BUST','NO SCORE','VISIT RESET'],win:['GAME SHOT','WINNER','MATCH COMPLETE'],leg:['GAME SHOT','LEG WON','NEXT LEG READY'],miss:['MISS','0','NEXT DART'],single:['SINGLE',`+${hit.value}`,'KEEP IT GOING']}[type];
+    playHitSound(type==='checkout'||type==='leg-end'?'leg':type==='placements'?'win':type);
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const host=$('#fx-host');if(!host)return;
+    const callout=$('.board-turn-callout');if(callout)callout.style.visibility='hidden';
+    host.innerHTML=`<div class="arcade-fx ${type}"><div class="fx-aura"></div><i class="fx-ring"></i>${type==='bull'?'<i class="fx-ring"></i>':''}${!['single','miss'].includes(type)?Array.from({length:18},(_,i)=>`<i class="fx-spark" style="--angle:${i*20}deg;--delay:${i%3*.02}s"></i>`).join(''):''}<div class="fx-caption"><small>${special[0]}</small><strong>${special[1]}</strong><span>${special[2]}</span></div></div>`;
+    if(!['single','miss'].includes(type))$('.board-stage')?.classList.add('impact');
+    fxTimer=setTimeout(()=>{host.innerHTML='';$('.board-stage')?.classList.remove('impact');if(callout)callout.style.visibility='';},1100);
+  }
+  function playHitSound(type){
+    if(!data.settings?.sound)return;
+    try{
+      audioContext ||= new (window.AudioContext||window.webkitAudioContext)();
+      if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+      const notes={single:[320],miss:[110],double:[440,660],triple:[440,660,880],bull:[523,659,784,1047],maximum:[523,659,784,1047,1319],win:[523,659,784,1047,1319],leg:[523,659,784,1047],bust:[180,130,80]}[type]||[330];
+      notes.forEach((frequency,i)=>{const osc=audioContext.createOscillator(),gain=audioContext.createGain(),at=audioContext.currentTime+i*.075;osc.type=type==='bust'?'sawtooth':'triangle';osc.frequency.setValueAtTime(frequency,at);gain.gain.setValueAtTime(0,at);gain.gain.linearRampToValueAtTime(.09,at+.008);gain.gain.exponentialRampToValueAtTime(.001,at+.18);osc.connect(gain);gain.connect(audioContext.destination);osc.start(at);osc.stop(at+.2);});
+    }catch(e){/* Visual feedback remains available without Web Audio. */}
+  }
+  function updateSound(){const b=$('[data-action="sound"]');if(!b)return;const on=!!data.settings?.sound;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',`Turn arcade sound ${on?'off':'on'}`);b.innerHTML=`${icon(on?'sound':'mute')}<span>Sound ${on?'on':'off'}</span>`;}
+  function celebrate(){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const c=document.createElement('div');c.className='confetti';c.setAttribute('aria-hidden','true');c.innerHTML=Array.from({length:40},()=>`<i style="left:${Math.random()*100}%;animation-delay:${Math.random()*.4}s;transform:rotate(${Math.random()*180}deg)"></i>`).join('');document.body.append(c);setTimeout(()=>c.remove(),3100);}
+  let dialogFocus=null;
+  function openDialog(title,body){const dialog=$('#dialog');if(!dialog.open)dialogFocus=document.activeElement;dialog.innerHTML=`<div class="dialog-head"><h2 id="dialog-title">${title}</h2><button class="icon-btn" data-action="close-dialog" aria-label="Close dialog">${icon('close')}</button></div><div class="dialog-body">${body}</div>`;if(!dialog.open)dialog.showModal();}
+  function closeDialog(){if($('#dialog').open){$('#dialog').close();if(dialogFocus?.isConnected)dialogFocus.focus();}}
+  let selectedPlayers=[];
+  function newMatchDialog(rematch=false){
+    const m=current(),g=derive(m);selectedPlayers=m.players.map(p=>p.id).filter(id=>data.players.some(p=>p.id===id));if(!selectedPlayers.length)selectedPlayers=data.players.slice(0,2).map(p=>p.id);
+    openDialog(rematch?'Run it back.':'Set up your match',`<p>Start at 301. Take turns. Make every dart count.</p><form id="new-match-form"><div class="field"><span class="field-label">Players <span class="muted" style="font-weight:400">· choose 1–8 in throwing order</span></span><div id="player-choices" class="player-choices"></div><div class="inline-add"><input class="text-input" id="quick-player-name" aria-label="New player name" placeholder="Add a new player…" maxlength="32"><button type="button" class="btn" data-action="quick-add-player" aria-label="Add player">${icon('plus')}</button></div><p id="setup-error" class="input-error" role="alert" hidden></p></div><div class="form-row"><div class="field"><label for="out-rule">Finish rule</label><select class="select-input" id="out-rule"><option value="double" ${m.out==='double'?'selected':''}>Double out</option><option value="straight" ${m.out==='straight'?'selected':''}>Straight out</option></select></div><div class="field"><label for="best-of">Match length</label><select class="select-input" id="best-of">${[1,3,5].map(n=>`<option value="${n}" ${m.bestOf===n?'selected':''}>${n===1?'Single leg':`First to ${Math.ceil(n/2)} legs`}</option>`).join('')}</select></div></div><div class="dialog-info">${g.winner===null&&(m.visits.length||pendingHits(m).length)?'Your current match will be saved as ended early. ':''}Each player starts at 301. With 3–8 players, checked-out players skip their turns; each leg continues until only one player is left. The first checkout wins the leg.</div><div class="dialog-actions"><button type="button" class="btn" data-action="close-dialog">Cancel</button><button class="btn primary" type="submit">Let’s play ${icon('arrow')}</button></div></form>`);renderChoices();
+  }
+  function renderChoices(){const box=$('#player-choices');if(!box)return;box.innerHTML=data.players.map(p=>`<label class="player-choice"><input type="checkbox" data-player-id="${esc(p.id)}" ${selectedPlayers.includes(p.id)?'checked':''}><span>${esc(p.name)}</span><span class="order">${selectedPlayers.includes(p.id)?`Throws ${selectedPlayers.indexOf(p.id)+1}`:''}</span></label>`).join('')||'<p class="muted" style="font-size:12px">Add a player below to start.</p>';}
+  function setupError(message){$('#setup-error').textContent=message;$('#setup-error').hidden=false;}
+  function addQuickPlayer(){const field=$('#quick-player-name'),name=field.value.trim();if(!name)return setupError('Give your player a name.');if(data.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))return setupError('That player already exists. Select them above.');const p={id:uid(),name};data.players.push(p);if(selectedPlayers.length<8)selectedPlayers.push(p.id);field.value='';$('#setup-error').hidden=true;save();renderChoices();}
+  function startMatch(){if(!selectedPlayers.length||selectedPlayers.length>8)return setupError('Choose between 1 and 8 players.');const old=current();if((old.visits.length||pendingHits(old).length)&&derive(old).winner===null)old.abandoned=true;if(!old.visits.length&&!pendingHits(old).length)data.matches=data.matches.filter(m=>m.id!==old.id);const match=makeMatch(selectedPlayers.map(id=>data.players.find(p=>p.id===id)),$('#out-rule').value,Number($('#best-of').value));data.matches.push(match);data.currentId=match.id;precisionMultiplier='S';tab='match';save();closeDialog();render();toast('Match on. Good darts.');}
+  function playerDialog(id){const p=data.players.find(p=>p.id===id);openDialog(p?'Edit player':'Meet your next regular',`<p>${p?'Player statistics stay with this profile when you change the name.':'Add a name. We’ll keep their scores and statistics here.'}</p><form id="player-form" data-id="${esc(id||'')}"><div class="field"><label for="player-name">Player name</label><input class="text-input" id="player-name" maxlength="32" required autocomplete="off" value="${p?esc(p.name):''}" placeholder="e.g. Jamie" autofocus><p id="player-error" class="input-error" role="alert" hidden></p></div><div class="dialog-actions">${p?'<button type="button" class="btn danger" data-action="remove-player" data-id="'+esc(p.id)+'">Remove player</button>':'<button type="button" class="btn" data-action="close-dialog">Cancel</button>'}<button type="submit" class="btn primary">${p?'Save changes':'Add player'}</button></div></form>`);$('#player-name').focus();}
+  function savePlayer(form){const name=$('#player-name').value.trim(),id=form.dataset.id;if(!name||data.players.some(p=>p.id!==id&&p.name.toLowerCase()===name.toLowerCase())){const error=$('#player-error');error.textContent=name?'A player with this name already exists.':'Enter a player name.';error.hidden=false;return;}const p=data.players.find(p=>p.id===id);if(p){p.name=name;const m=current();if(derive(m).winner===null)m.players.filter(p=>p.id===id).forEach(p=>p.name=name);}else data.players.push({id:uid(),name});save();closeDialog();render();toast(p?'Player updated.':'Player added.');}
+  function removePlayerDialog(id){const p=data.players.find(p=>p.id===id);openDialog('Remove player?',`<p>Remove <strong>${esc(p.name)}</strong> from your player list? Their saved matches and current game will stay intact.</p><div class="dialog-actions"><button class="btn" data-action="close-dialog">Keep player</button><button class="btn danger" data-action="confirm-remove" data-id="${esc(id)}">Remove player</button></div>`);}
+  function matchDetail(id){const m=data.matches.find(m=>m.id===id),g=derive(m);openDialog('Match record',`<p>${esc(dateLabel(m.startedAt))} · 301 · ${m.out==='double'?'Double':'Straight'} out · ${m.bestOf===1?'Single leg':`First to ${Math.ceil(m.bestOf/2)} legs`}</p><div class="dialog-info" style="margin-bottom:22px">${g.winner!==null?`${esc(m.players[g.winner].name)} won the match`:m.abandoned?'Ended early':'Match in progress'}<br>${m.players.map((p,i)=>`${esc(p.name)}: ${g.wins[i]} leg${g.wins[i]===1?'':'s'}`).join(' · ')}</div>${g.ranked?g.legResults.map(result=>rankingsMarkup(m,result)).join(''):''}${visitsTable(m,historyRows(m),Infinity)}<div class="dialog-actions"><button class="btn" data-action="close-dialog">Close</button>${id===data.currentId?'<button class="btn primary" data-action="return-match">Go to match</button>':''}</div>`);}
 
-        <div id="winner-banner" class="winner-banner" hidden></div>
+  function rulesDialog(){openDialog('301. Now every dart counts.',`<p>Start at 301 and tap the segment each dart hit. The first player to reach exactly zero wins the leg.</p><ul class="rule-list"><li><strong>Tap the board:</strong> the wide areas score the number shown. The outer narrow ring doubles it; the inner narrow ring triples it. Outer bull scores 25; bullseye scores 50.</li><li><strong>Three darts per visit:</strong> each tap is saved immediately. After the third dart, select Next player. A miss scores zero and uses one dart. End visit early records only the darts you threw.</li><li><strong>Double out:</strong> finish on a double or the bullseye. A single or triple reaching zero is a bust. Straight out allows any scoring segment.</li><li><strong>Bust:</strong> going below zero or leaving 1 in double out resets the whole visit. The board pauses so you can pass to the next player.</li><li><strong>Undo dart:</strong> removes one dart and restores the turn, score, leg, and statistics, even after a bust, checkout, or win. Older total-entry records undo as a whole visit.</li><li><strong>Precision entry:</strong> use the larger number buttons below the board, with Single, Double, or Triple selected. On the board, arrow keys select segments; Enter or Space records the focused segment. Ctrl/⌘ Z undoes.</li><li><strong>Three to eight players:</strong> the first checkout wins the leg, then play continues for the remaining places. Checked-out players are skipped. The leg ends when only one player has not checked out. In a multi-leg match, the next leg starts after places are decided. The opening player rotates between legs.</li></ul><div class="dialog-info">Every dart, including an unfinished visit, is saved in this browser. Keep the HTML file in the same location. Export a backup before clearing browser data or switching devices. Averages use actual darts thrown; bust visits score zero. Arcade sound is optional, and reduced-motion settings are respected.</div><div class="dialog-actions"><button class="btn primary" data-action="close-dialog">Back to the board ${icon('arrow')}</button></div>`);}
+  function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`oche-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Backup exported. Keep it for your next device.');}
+  async function importData(file){if(!file)return;if(file.size>15000000)return toast('This file is too large. Choose an OCHE backup under 15 MB.');try{const value=JSON.parse(await file.text());if(!validData(value))throw new Error('Invalid backup');pendingImport=value;openDialog('Restore your backup?',`<p>This backup contains <strong>${value.players.length} players</strong> and <strong>${value.matches.length} matches</strong>. Restoring replaces the players and matches on this device.</p><div class="dialog-info">Export your current data first if you want to keep a separate copy.</div><div class="dialog-actions"><button class="btn" data-action="export">Export current</button><button class="btn primary" data-action="confirm-import">Restore backup</button></div>`);}catch(e){toast('That file is not a valid OCHE backup. Your data is unchanged.');}}
+  document.addEventListener('click',event=>{
+    const b=event.target.closest('[data-action]');if(!b||b.disabled)return;const a=b.dataset.action;
+    if(a==='tab'){tab=b.dataset.tab;render();}
 
-        <div class="match-layout">
-          <aside class="score-panel" aria-label="Score status">
-            <div class="score-readout">
-              <span>Remaining</span>
-              <strong id="current-score">301</strong>
-              <small id="checkout-hint">Score down</small>
-            </div>
+    else if(a==='hit')recordDart(b.dataset.code,boardClickPosition(event,b));
+    else if(a==='multiplier'){precisionMultiplier=b.dataset.value;precisionOpen=true;render();}
+    else if(a==='next-player')nextPlayer();
+    else if(a==='end-visit')endVisit();
+    else if(a==='undo')undo();
+    else if(a==='sound'){data.settings={...data.settings,sound:!data.settings?.sound};save();updateSound();if(data.settings.sound)playHitSound('double');}
+    else if(a==='new-match'||a==='rematch')newMatchDialog(a==='rematch');
+    else if(a==='close-dialog')closeDialog();
+    else if(a==='quick-add-player')addQuickPlayer();
+    else if(a==='add-player')playerDialog();
+    else if(a==='edit-player')playerDialog(b.dataset.id);
+    else if(a==='remove-player')removePlayerDialog(b.dataset.id);
+    else if(a==='confirm-remove'){data.players=data.players.filter(p=>p.id!==b.dataset.id);save();closeDialog();render();toast('Player removed. Match records kept.');}
+    else if(a==='match-detail')matchDetail(b.dataset.id);
+    else if(a==='return-match'){closeDialog();tab='match';render();}
+    else if(a==='rules')rulesDialog();
+    else if(a==='export')exportData();
+    else if(a==='import')$('#import-file').click();
+    else if(a==='confirm-import'&&pendingImport){data=upgradeCurrentMatch(pendingImport);pendingImport=null;precisionMultiplier='S';tab='match';save();closeDialog();render();toast('Backup restored. Welcome back.');}
+  });
+  document.addEventListener('submit',event=>{event.preventDefault();if(event.target.id==='new-match-form')startMatch();else if(event.target.id==='player-form')savePlayer(event.target);});
+  document.addEventListener('change',event=>{const id=event.target.dataset.playerId;if(id){if(event.target.checked){if(selectedPlayers.length>=8){event.target.checked=false;setupError('Up to 8 players can join a match.');return;}selectedPlayers.push(id);}else selectedPlayers=selectedPlayers.filter(p=>p!==id);const activeId=id;renderChoices();Array.from(document.querySelectorAll('[data-player-id]')).find(el=>el.dataset.playerId===activeId)?.focus();}if(event.target.id==='import-file'){importData(event.target.files[0]);event.target.value='';}});
+  document.addEventListener('keydown',event=>{
+    if($('#dialog').open){if(event.target.id==='quick-player-name'&&event.key==='Enter'){event.preventDefault();addQuickPlayer();}return;}
+    if(tab!=='match')return;
+    if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='z'){event.preventDefault();undo();return;}
+    if(event.ctrlKey||event.metaKey||event.altKey||event.target.matches('input,select,textarea'))return;
 
-            <div class="visit-panel">
-              <div>
-                <span>Visit</span>
-                <strong id="visit-total">0</strong>
-              </div>
-              <div>
-                <span>Darts</span>
-                <strong id="dart-count">0/3</strong>
-              </div>
-            </div>
-
-            <form id="manual-form" class="manual-form">
-              <label for="manual-score">Keyboard score</label>
-              <div>
-                <input
-                  id="manual-score"
-                  name="manualScore"
-                  type="number"
-                  min="0"
-                  step="1"
-                  inputmode="numeric"
-                  placeholder="e.g. 85"
-                />
-                <button id="manual-submit" type="submit" class="primary-button">
-                  Log
-                </button>
-              </div>
-            </form>
-
-            <div class="current-darts">
-              <span>This visit</span>
-              <div id="visit-darts"></div>
-            </div>
-          </aside>
-
-          <section class="board-stage" aria-label="Dartboard scoring">
-            <div class="board-stack">
-              <div id="dartboard" class="dartboard"></div>
-              <button
-                id="miss-button"
-                type="button"
-                class="ghost-button miss-button"
-                aria-label="Record missed dart for zero points"
-              >
-                <strong>Miss</strong>
-                <span>0 points</span>
-              </button>
-            </div>
-          </section>
-
-          <aside class="side-panel" aria-label="Players and history">
-            <section>
-              <h2>Players</h2>
-              <ol id="scoreboard" class="scoreboard"></ol>
-            </section>
-            <section>
-              <h2>Turns</h2>
-              <ol id="history" class="history"></ol>
-            </section>
-          </aside>
-        </div>
-      </section>
-    </main>
-
-    <div
-      id="comic-callout"
-      class="comic-callout"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-      hidden
-    >
-      <span class="comic-burst" aria-hidden="true"></span>
-      <strong id="comic-callout-word" class="comic-word"></strong>
-    </div>
-
-    <div id="turn-announcement" class="turn-announcement" aria-hidden="true" hidden>
-      <span class="turn-impact" aria-hidden="true"></span>
-      <div class="turn-copy">
-        <strong id="turn-player" class="turn-player"></strong>
-        <strong id="turn-suffix" class="turn-suffix"></strong>
-      </div>
-    </div>
-
-    <div id="toast" class="toast" hidden></div>
-    <script src="sound-manager.js"></script>
-    <script src="app.js"></script>
-  </body>
+    const target=event.target.closest('.board-segment');
+    if(target){
+      if(['Enter',' '].includes(event.key)){event.preventDefault();if(!event.repeat){const code=target.dataset.code;recordDart(code);Array.from(document.querySelectorAll('.board-segment[data-inner="false"]')).find(el=>el.dataset.code===code)?.focus();}return;}
+      if(['ArrowRight','ArrowDown','ArrowLeft','ArrowUp','Home','End'].includes(event.key)){
+        event.preventDefault();const targets=Array.from(document.querySelectorAll('.board-segment[data-inner="false"]'));
+        const direction=['ArrowRight','ArrowDown'].includes(event.key)?1:-1;
+        const next=event.key==='Home'?0:event.key==='End'?targets.length-1:(targets.indexOf(target)+direction+targets.length)%targets.length;
+        targets.forEach(el=>el.setAttribute('tabindex','-1'));targets[next].setAttribute('tabindex','0');boardFocus=targets[next].dataset.code;targets[next].focus();
+      }
+      return;
+    }
+    if(event.key==='Enter'&&event.target===document.body&&current().awaitingNext){event.preventDefault();nextPlayer();}
+  });
+  // Keep multiple open copies in sync instead of overwriting another tab's visits.
+  window.addEventListener('storage',event=>{if(event.key!==STORAGE_KEY||!event.newValue)return;try{const next=JSON.parse(event.newValue);if(validData(next)){data=upgradeCurrentMatch(next);precisionMultiplier='S';closeDialog();render();toast('Match updated from another tab.');}}catch(e){/* Preserve the current session on invalid external data. */}});
+  document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
+  render();if(loadWarning){updateSaved();toast(loadWarning);}else save();
+  </script>
+</body>
 </html>
