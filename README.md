@@ -27,9 +27,26 @@ During a game, lineup expressions react after every dart: calm for a level game,
 
 Avatars work offline, appear in the lineup and player profiles, and are included in saved data and exported backups.
 
+## Dart unlocks
+
+Open **Players → Dart armory** to preview every design and equip an earned dart. By default, **Auto-upgrade** uses the best unlocked design. Equipment is saved per player and included in backups; the board shows the throwing player's design at the recorded dart location.
+
+| Completed match wins | Design | Effect |
+| --- | --- | --- |
+| 0 | Classic | Steel and lime flights |
+| 1 | Copperhead | Engraved copper and angular flights |
+| 2 | Frostbite | Crystal wings and drifting ice |
+| 4 | Volt | Crackling lightning |
+| 8 | Inferno | Animated flame and embers |
+| 16 | Tempest | Electric arcs and a storm orbit |
+| 32 | Eclipse | Dark core, violet lightning, luminous orbit |
+| 50 | Supernova | Solar wings, flame trail, orbit and expanding corona |
+
+The ladder doubles and caps at 50 wins. Existing completed wins count immediately, including solo matches; legs, losses, and unfinished games do not count. New milestones display an unlock notification. Undoing a victory or deleting a winning game recalculates eligibility; a selected design that becomes locked falls back to the best available design. Reduced-motion mode keeps the designs visible without animation.
+
 ## Arcade feedback and accessibility
 
-Doubles, triples, outer bull, bullseyes, busts, checkouts, and a 180 visit have score animations. A 180, checkout, or match win triggers a full-body avatar celebration with Rickroll-style side steps, swinging arms, and shoulder bounces. The dancer keeps the player’s customized appearance. The next-player countdown begins after the 3.4-second dance, and undo cancels it immediately. Reduced-motion settings show a brief, static victory pose instead. Dart markers and the last-hit readout retain scoring information after the effect ends. **Sound** optionally enables locally synthesized arcade tones; it starts muted and the preference is saved.
+Doubles, triples, outer bull, bullseyes, busts, checkouts, and a 180 visit have score animations. A 180, checkout, or match win triggers a full-body avatar celebration with Rickroll-style step-touches, alternating bent-arm gestures, shoulder turns, and a vintage microphone stand. The dancer keeps the player’s customized appearance. The next-player countdown begins after the 4.4-second dance, and undo cancels it immediately. Reduced-motion settings show a brief, static victory pose instead. Dart markers and the last-hit readout retain scoring information after the effect ends. **Sound** optionally enables locally synthesized arcade tones; it starts muted and the preference is saved.
 
 Reduced-motion settings suppress dramatic effects. The board supports keyboard input: Tab to the board, use arrow keys to select a segment, and Enter or Space to score it. Ctrl/Cmd+Z undoes the last dart. Precision entry uses standard accessible buttons.
 
