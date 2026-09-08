@@ -13,15 +13,23 @@ Open **index.html** directly in a modern browser. The entire app is in one file:
 - **Undo dart** reverses one dart, including after a bust, leg win, match win, or handover. Old records entered as visit totals undo as a complete visit.
 - On small screens, **Precision entry** provides larger number buttons with Single, Double, and Triple selectors, plus bull buttons. Miss and undo controls also appear immediately below the board.
 - Double-out checkouts are recognized from the actual final segment. An overscore, a remaining 1 in double-out, or reaching zero without the required double busts the entire visit.
-- **Players** manages profiles and statistics. **History** shows individual darts, completed matches, and matches ended early.
+- **Players** manages profiles and statistics. **History** shows individual darts, completed matches, and matches ended early. Open a game and choose **Delete game** to remove only that game after confirmation. Player statistics update automatically and profiles are kept. Deleting the current game prepares a fresh game with the same players and rules.
 
 With **3–8 players**, the first checkout earns first place and the leg win, while the others keep playing for their places. Checked-out players are skipped and their large scoreboard number shows their place (1st, 2nd, etc.) instead of zero. Players still throwing keep their remaining score. The leg ends when only one player has not checked out; that player takes the final place with their remaining score recorded. Final standings appear in the result panel and match history. Undo also reverses a placement and can reopen a completed leg or match.
 
 For multi-leg matches, play completes the remaining places before starting the next leg or declaring the match winner. The first player to reach the chosen leg-win target wins the match after that leg's places are decided. Solo and two-player games finish the leg at the winning checkout. The opening player rotates each leg. Three-dart averages use actual darts thrown; bust visits contribute zero points. Pending visits provisionally contribute to the live average until the visit finishes.
 
+## Player avatars
+
+Every player receives a distinct illustrated avatar automatically, including players from older saves. In **Players**, choose the edit button to customize skin tone, background, face shape, expression, hair style and color, accessories, clothing, and clothing color. The preview updates immediately; **Shuffle avatar** generates another combination. Choose **Save changes** to keep it, or close the dialog to discard edits. New players can customize their avatar while being added.
+
+During a game, lineup expressions react after every dart: calm for a level game, happy for a lead, excited for a clear lead or checkout, and focused or disappointed when behind. Busts get a disappointed reaction, and the match winner celebrates. Standings compare legs won before remaining points and account for multiplayer checkout places. Undo restores the corresponding mood. The expression chosen in the editor stays saved for profiles.
+
+Avatars work offline, appear in the lineup and player profiles, and are included in saved data and exported backups.
+
 ## Arcade feedback and accessibility
 
-Doubles, triples, outer bull, bullseyes, busts, checkouts, and a 180 visit have score animations. Dart markers and the last-hit readout retain scoring information after the effect ends. **Sound** optionally enables locally synthesized arcade tones; it starts muted and the preference is saved.
+Doubles, triples, outer bull, bullseyes, busts, checkouts, and a 180 visit have score animations. A 180, checkout, or match win triggers a full-body avatar celebration with Rickroll-style side steps, swinging arms, and shoulder bounces. The dancer keeps the player’s customized appearance. The next-player countdown begins after the 3.4-second dance, and undo cancels it immediately. Reduced-motion settings show a brief, static victory pose instead. Dart markers and the last-hit readout retain scoring information after the effect ends. **Sound** optionally enables locally synthesized arcade tones; it starts muted and the preference is saved.
 
 Reduced-motion settings suppress dramatic effects. The board supports keyboard input: Tab to the board, use arrow keys to select a segment, and Enter or Space to score it. Ctrl/Cmd+Z undoes the last dart. Precision entry uses standard accessible buttons.
 

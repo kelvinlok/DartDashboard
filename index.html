@@ -43,6 +43,9 @@
     @media(max-width:680px){.arcade-fx.placements .fx-caption strong,.arcade-fx.leg-end .fx-caption strong{font-size:47px}}
     @media(prefers-reduced-motion:reduce){.arcade-fx,.board-stage:before{display:none!important}.board-segment.hit-flash{fill:var(--orange)}.interactive-board{filter:none}.screen{animation:none!important}}
 
+    .avatar{overflow:hidden}.avatar svg{width:100%;height:100%}.arcade-player .avatar{width:54px;height:54px}.arcade-player{grid-template-columns:54px minmax(0,1fr) auto}.profile-head .avatar{width:72px;height:72px}.avatar-preview-row{display:flex;align-items:center;gap:24px;padding:4px 0 22px;border-bottom:1px solid var(--line);margin-bottom:20px}.avatar-preview{width:132px;height:132px;border-radius:28px;overflow:hidden;flex-shrink:0;box-shadow:0 8px 24px #0003}.avatar-preview svg{width:100%;height:100%}.avatar-preview-row .eyebrow{color:var(--orange)}.avatar-preview-row p{font-size:20px;margin:8px 0 14px}.avatar-preview-row .btn{min-height:36px;font-size:11px}.avatar-controls{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.avatar-controls .field{margin-bottom:16px}.avatar-controls select{font-size:12px;min-height:44px}.avatar-editor{margin-top:24px}.avatar-preview svg{animation:avatar-reveal .18s ease-out}@keyframes avatar-reveal{from{opacity:.6;transform:scale(.96)}to{opacity:1;transform:scale(1)}}@media(prefers-reduced-motion:reduce){.avatar-preview svg{animation:none}}@media(max-width:940px){.arcade-player,.arcade-roster:not(.many) .arcade-player{grid-template-columns:44px minmax(0,1fr)}.arcade-player .avatar{display:grid;width:44px;height:44px;grid-row:1/3}.arcade-player .score-number{grid-column:2;grid-row:2;text-align:left!important}.arcade-player .avatar+div{grid-column:2;grid-row:1}.arcade-roster.many .arcade-player{display:flex}.arcade-roster.many .arcade-player .avatar{width:44px;height:44px}}@media(max-width:380px){.avatar-preview-row{gap:16px}.avatar-preview{width:112px;height:112px}.avatar-controls{gap:0 10px}}
+    #player-form>.dialog-actions{position:sticky;bottom:-27px;background:var(--paper);padding:14px 0;margin-top:8px;border-top:1px solid var(--line);z-index:1}@media(max-width:680px){#player-form>.dialog-actions{bottom:-23px}}
+    .dance-celebration{position:absolute;inset:4%;z-index:4;background:#10151bfa;border:1px solid #829953;border-radius:22px;box-shadow:0 16px 44px #0008;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;overflow:hidden;padding:14px;gap:3px}.dance-celebration>.eyebrow{color:var(--orange);font-size:clamp(8px,1vw,11px);text-align:center}.dance-avatar{height:68%;max-height:330px;width:auto;flex-shrink:1;min-height:0;overflow:visible}.dance-celebration>strong{font-size:clamp(17px,2.5vw,29px);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f2f5e9}.dance-subtitle{font-size:clamp(9px,1vw,12px);color:#b6c3a8;text-align:center}.dance-step{animation:rick-step .8s ease-in-out infinite;transform-origin:90px 210px}.dance-upper{animation:rick-sway .8s ease-in-out infinite;transform-origin:90px 140px}.dance-head{animation:rick-nod .4s ease-in-out infinite;transform-origin:90px 77px}.dance-arm-left{transform-origin:65px 84px;animation:rick-arm-left .8s ease-in-out infinite}.dance-arm-right{transform-origin:114px 84px;animation:rick-arm-right .8s ease-in-out infinite}.dance-leg-left{transform-origin:77px 140px;animation:rick-leg .8s ease-in-out infinite}.dance-leg-right{transform-origin:103px 140px;animation:rick-leg .8s ease-in-out -.4s infinite}@keyframes rick-step{0%,100%{transform:translateX(-9px)}25%,75%{transform:translateY(-4px)}50%{transform:translateX(9px)}}@keyframes rick-sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}@keyframes rick-nod{0%,100%{transform:rotate(-3deg)}50%{transform:translateY(2px) rotate(3deg)}}@keyframes rick-arm-left{0%,100%{transform:rotate(-30deg)}50%{transform:rotate(32deg)}}@keyframes rick-arm-right{0%,100%{transform:rotate(-32deg)}50%{transform:rotate(30deg)}}@keyframes rick-leg{0%,100%{transform:rotate(8deg)}50%{transform:rotate(-9deg)}}@media(prefers-reduced-motion:reduce){.dance-celebration *{animation:none!important}.dance-arm-left{transform:rotate(110deg)}.dance-arm-right{transform:rotate(-110deg)}.dance-upper{transform:rotate(-5deg)}}
   </style>
 </head>
 <body>
@@ -119,7 +122,99 @@
     }
     finishCache.set(key,result);return result;
   }
-  function makeMatch(players,out='double',bestOf=1){return {id:uid(),startedAt:new Date().toISOString(),players:players.map(p=>({id:p.id,name:p.name})),out,bestOf,finishMode:players.length>2?'placements':'first',visits:[],pending:[],awaitingNext:false,abandoned:false};}
+
+  const avatarOptions={
+    skin:['Porcelain','Sand','Honey','Caramel','Umber','Ebony'],
+    background:['Emerald','Sky','Violet','Ocean','Berry','Indigo','Teal','Slate'],
+    face:['Round','Oval','Square'],
+    emotion:['Happy','Calm','Wink','Excited','Focused','Disappointed'],
+    hair:['Crop','Side part','Curls','Long','Bald','Spikes'],
+    hairColor:['Midnight','Chocolate','Chestnut','Gold','Silver','Pink'],
+    accessory:['None','Glasses','Sunglasses','Earring','Headband'],
+    clothing:['T-shirt','Jersey','Hoodie','Collared'],
+    clothingColor:['Lime','Ocean','Violet','Coral','Cream','Graphite']
+  };
+  const avatarLabels={skin:'Skin tone',background:'Background',face:'Face shape',emotion:'Expression',hair:'Hair style',hairColor:'Hair color',accessory:'Accessory',clothing:'Clothing',clothingColor:'Clothing color'};
+  const avatarColors={skin:['#f7d9bd','#eac09a','#dca06b','#bc7e53','#8b563b','#593b30'],background:['#24976c','#328cce','#8254c7','#237da0','#b04488','#5c62bd','#208f91','#647991'],hairColor:['#232735','#4b332d','#8d4b32','#e4b85e','#d8dfe5','#d978a1'],clothingColor:['#c4f46b','#458fbb','#9577d4','#df7868','#e8dec6','#38465b']};
+  let avatarDraft=null;
+  function validAvatar(a){return !!a&&typeof a==='object'&&!Array.isArray(a)&&Object.keys(avatarOptions).every(k=>Number.isInteger(a[k])&&a[k]>=0&&a[k]<avatarOptions[k].length);}
+  function defaultAvatar(seed){let n=2166136261;for(const ch of seed)n=Math.imul(n^ch.charCodeAt(0),16777619);return Object.fromEntries(Object.entries(avatarOptions).map(([k,v])=>{n^=n<<13;n^=n>>>17;n^=n<<5;return [k,(n>>>0)%v.length];}));}
+  function uniqueAvatar(seed,used){let a,i=0;do{a=defaultAvatar(seed+':'+i++);}while(used.has(JSON.stringify(a)));return a;}
+  function ensureAvatars(value){
+    const known=new Map(),used=new Set();
+    for(const p of [...value.players,...value.matches.flatMap(m=>m.players)]){
+      if(!known.has(p.id)){const a=validAvatar(p.avatar)?p.avatar:uniqueAvatar(p.id,used);known.set(p.id,a);used.add(JSON.stringify(a));}
+      p.avatar={...known.get(p.id)};
+    }
+    return value;
+  }
+  function avatarBackground(a){
+    const rgb=hex=>[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));
+    const luminance=channels=>channels.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;}).reduce((sum,v,i)=>sum+v*[.2126,.7152,.0722][i],0);
+    const base=rgb(avatarColors.background[a.background]);
+    const tones=[luminance(rgb(avatarColors.skin[a.skin]))];
+    if(a.hair!==4)tones.push(luminance(rgb(avatarColors.hairColor[a.hairColor])));
+    const contrast=channels=>{const light=luminance(channels);return Math.min(...tones.map(t=>(Math.max(light,t)+.05)/(Math.min(light,t)+.05)));};
+    let best=base,bestContrast=contrast(base);
+    // Keep the chosen hue, adjusting its shade only when it blends with the portrait.
+    if(bestContrast>=2)return avatarColors.background[a.background];
+    for(let step=1;step<=20;step++)for(const target of [0,255]){
+      const candidate=base.map(v=>Math.round(v+(target-v)*step/20)),score=contrast(candidate);
+      if(score>=2)return '#'+candidate.map(v=>v.toString(16).padStart(2,'0')).join('');
+      if(score>bestContrast){best=candidate;bestContrast=score;}
+    }
+    return '#'+best.map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+  function avatarSVG(a,headOnly=false){
+    if(!validAvatar(a))a=defaultAvatar('fallback');
+    const skin=avatarColors.skin[a.skin],bg=avatarBackground(a),hair=avatarColors.hairColor[a.hairColor],shirt=avatarColors.clothingColor[a.clothingColor],ink='#252936';
+    const face=[`<ellipse cx="50" cy="46" rx="25" ry="27"/>`,`<ellipse cx="50" cy="46" rx="21" ry="30"/>`,`<rect x="26" y="20" width="48" height="54" rx="16"/>`][a.face];
+    const hairBack=a.hair===3?`<path d="M23 76V38Q20 10 50 10T77 38V80Z" fill="${hair}"/>`:'';
+    const hairTop=[`<path d="M25 36Q19 12 49 13Q78 12 75 36L66 25Q44 32 32 25Z"/>`,`<path d="M25 39Q17 13 46 12Q75 8 77 36L64 25Q47 39 30 28Z"/>`,`<path d="M24 36Q12 28 23 22Q17 11 31 13Q36 2 46 12Q58 2 65 13Q81 9 78 23Q88 32 75 38L69 27Q55 32 46 24Q35 34 29 28Z"/>`,`<path d="M25 39Q19 12 49 12Q78 12 75 41Q66 30 59 23Q45 38 25 39Z"/>`,'',`<path d="M25 35L22 18L35 22L39 7L49 19L59 8L64 21L77 17L75 36L65 28L34 28Z"/>`][a.hair];
+    const eyes=a.emotion===3?`<path d="M34 45Q38 39 42 45M58 45Q62 39 66 45"/>`:a.emotion===2?`<ellipse cx="38" cy="44" rx="4" ry="4.5" fill="#fff" stroke="none"/><circle cx="38" cy="44" r="2" fill="${ink}"/><path d="M58 44Q62 48 66 43"/>`:`<ellipse cx="38" cy="44" rx="4" ry="4.5" fill="#fff" stroke="none"/><ellipse cx="62" cy="44" rx="4" ry="4.5" fill="#fff" stroke="none"/><circle cx="38" cy="44" r="2" fill="${ink}"/><circle cx="62" cy="44" r="2" fill="${ink}"/>`;
+    const mouth=[`<path d="M40 57Q50 68 60 57Z" fill="#fff"/>`,`<path d="M44 59Q50 61 56 59" fill="none"/>`,`<path d="M42 58Q52 65 59 56" fill="none"/>`,`<ellipse cx="50" cy="59" rx="7" ry="6" fill="#fff"/>`,`<path d="M44 59H56M33 37L42 39M58 39L67 37" fill="none"/>`,`<path d="M41 63Q50 54 59 63M33 38L42 35M58 35L67 38" fill="none"/>`][a.emotion];
+    const clothes=[`<path d="M39 79Q50 89 61 79" fill="none" stroke="${ink}" stroke-opacity=".3"/>`,`<path d="M28 84V100M72 84V100" stroke="#fff" stroke-width="5"/><text x="50" y="96" text-anchor="middle" fill="#fff" font-size="13" font-weight="800">01</text>`,`<path d="M36 77L29 84L42 93L50 86L58 93L71 84L64 77" fill="none" stroke="${ink}" stroke-opacity=".35" stroke-width="3"/><path d="M43 89V97M57 89V97" stroke="#fff" stroke-width="2"/>`,`<path d="M36 77L50 85L42 92L32 81ZM64 77L50 85L58 92L68 81Z" fill="#fff" fill-opacity=".8"/><path d="M50 86V100" stroke="${ink}" stroke-opacity=".4"/>`][a.clothing];
+    const accessory=['',`<g fill="none" stroke="${ink}" stroke-width="2.5"><rect x="29" y="38" width="17" height="13" rx="5"/><rect x="54" y="38" width="17" height="13" rx="5"/><path d="M46 43H54"/></g>`,`<g fill="${ink}" stroke="${ink}" stroke-width="2"><path d="M29 39H46V46Q38 55 30 46ZM54 39H71L70 46Q62 55 54 46Z"/><path d="M46 42H54"/></g>`,`<circle cx="75" cy="55" r="4" fill="none" stroke="#fff0a3" stroke-width="3"/>`,`<path d="M26 31Q50 23 74 31" fill="none" stroke="${shirt}" stroke-width="7"/>`][a.accessory];
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${headOnly?'':`<rect width="100" height="100" fill="${bg}"/>`}${hairBack}${headOnly?'':`<path d="M13 103V94Q15 77 37 76H63Q85 77 87 94V103" fill="${shirt}"/>`}<path d="M42 65H58V79Q50 87 42 79Z" fill="${skin}"/><path d="M42 69Q50 76 58 69" fill="none" stroke="${ink}" opacity=".15" stroke-width="5"/>${headOnly?'':clothes}<g fill="${skin}"><ellipse cx="26" cy="46" rx="5" ry="7"/><ellipse cx="74" cy="46" rx="5" ry="7"/>${face}</g><g fill="${hair}">${hairTop}</g><g stroke="${ink}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">${eyes}<path d="M49 47L47 52H51" opacity=".3"/>${mouth}</g>${accessory}</svg>`;
+  }
+  function dancingAvatar(p){
+    const a={...(data.players.find(x=>x.id===p.id)?.avatar||p.avatar||defaultAvatar(p.id)),emotion:0};
+    const skin=avatarColors.skin[a.skin],shirt=avatarColors.clothingColor[a.clothingColor];
+    const detail=[`<path d="M77 82Q90 93 103 82" fill="none" stroke="#252936" stroke-opacity=".3" stroke-width="3"/>`,`<path d="M70 88V139M110 88V139" stroke="#fff" stroke-width="4"/><text x="90" y="119" text-anchor="middle" fill="#fff" font-size="20" font-weight="800">01</text>`,`<path d="M75 78L67 87L80 101L90 88L100 101L113 87L105 78" fill="none" stroke="#252936" stroke-opacity=".4" stroke-width="3"/><path d="M82 98V115M98 98V115" stroke="#fff" stroke-width="2"/>`,`<path d="M76 78L90 89L80 98L68 83ZM104 78L90 89L100 98L112 83Z" fill="#fff"/><path d="M90 91V141" stroke="#252936" stroke-opacity=".4"/>`][a.clothing];
+    const head=avatarSVG(a,true).replace('<svg viewBox=', '<svg x="40" y="0" width="100" height="100" viewBox=');
+    return `<svg class="dance-avatar" viewBox="0 0 180 230" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="90" cy="216" rx="49" ry="7" fill="#000" opacity=".35"/><g class="dance-step"><g class="dance-leg dance-leg-left"><path d="M77 135L74 171L64 201" fill="none" stroke="#8291ab" stroke-width="19" stroke-linecap="round"/><path d="M64 199L58 211H80L77 201" fill="#f0f4ee"/></g><g class="dance-leg dance-leg-right"><path d="M103 135L105 170L116 201" fill="none" stroke="#667691" stroke-width="19" stroke-linecap="round"/><path d="M116 199L108 211H131L125 203" fill="#f0f4ee"/></g><g class="dance-upper"><g class="dance-arm dance-arm-left"><path d="M65 84L49 109L69 122" fill="none" stroke="${skin}" stroke-width="12" stroke-linecap="round"/><path d="M65 84L55 100" stroke="${shirt}" stroke-width="19" stroke-linecap="round"/><circle cx="70" cy="122" r="7" fill="${skin}"/></g><path d="M66 80Q90 69 114 80L120 143Q90 152 60 143Z" fill="${shirt}"/>${detail}<g class="dance-head">${head}</g><g class="dance-arm dance-arm-right"><path d="M114 84L132 104L117 122" fill="none" stroke="${skin}" stroke-width="12" stroke-linecap="round"/><path d="M114 84L125 97" stroke="${shirt}" stroke-width="19" stroke-linecap="round"/><circle cx="116" cy="123" r="7" fill="${skin}"/></g></g></g></svg>`;
+  }
+  function playerAvatar(p,emotion=null){const a=data.players.find(x=>x.id===p.id)?.avatar||p.avatar||defaultAvatar(p.id);return avatarSVG(emotion===null?a:{...a,emotion});}
+  function liveAvatarMood(m,g,i){
+    const mood=(emotion,reason)=>({emotion,label:avatarOptions.emotion[emotion]+' · '+reason});
+    if(g.winner!==null)return i===g.winner?mood(3,'Match winner'):mood(5,'Match finished');
+    const last=g.rows.at(-1);
+    if(m.awaitingNext&&last?.player===i){
+      if(last.bust)return mood(5,'Busted this visit');
+      if(last.won)return mood(3,'Checked out');
+    }
+    const place=g.finishOrder.indexOf(i);
+    if(place>=0)return mood(place===0?3:0,ordinal(place+1)+' place secured');
+    if(m.players.length===1)return g.scores[i]===301?mood(1,'Ready to throw'):mood(g.scores[i]<=100?3:0,'Closing in on checkout');
+    // Compare legs first, then checkout places and remaining points within the leg.
+    const legPosition=j=>{const place=g.finishOrder.indexOf(j);return place<0?m.players.length:place;};
+    const compare=(a,b)=>g.wins[b]-g.wins[a]||legPosition(a)-legPosition(b)||g.scores[a]-g.scores[b];
+    const order=m.players.map((_,index)=>index).sort(compare),leader=order[0];
+    const tied=g.wins[i]===g.wins[leader]&&g.scores[i]===g.scores[leader]&&g.finishOrder.length===0;
+    if(tied){
+      const allTied=order.every(j=>g.wins[j]===g.wins[i]&&g.scores[j]===g.scores[i]);
+      if(allTied)return mood(1,'Level game');
+      const joint=order.filter(j=>g.wins[j]===g.wins[i]&&g.scores[j]===g.scores[i]).length>1;
+      if(joint)return mood(0,'Joint lead');
+    }
+    if(i===leader){const second=order[1];return mood(g.wins[i]>g.wins[second]||g.scores[second]-g.scores[i]>=60?3:0,'Leading');}
+    return mood(g.wins[i]<g.wins[leader]||g.finishOrder.length>0||g.scores[i]-g.scores[leader]>=60?5:4,'Chasing the lead');
+  }
+  function livePlayerAvatar(p,m,g,i){const mood=liveAvatarMood(m,g,i);return `<span class="avatar" role="img" aria-label="${esc(p.name+': '+mood.label)}" title="${esc(mood.label)}" data-mood="${avatarOptions.emotion[mood.emotion].toLowerCase()}">${playerAvatar(p,mood.emotion)}</span>`;}
+
+  function avatarEditor(){return `<section class="avatar-editor" aria-label="Avatar customization"><div class="avatar-preview-row"><div id="avatar-preview" class="avatar-preview" role="img" aria-label="Avatar preview">${avatarSVG(avatarDraft)}</div><div><span class="eyebrow">YOUR LOOK</span><p>Make it yours.</p><button type="button" class="btn" data-action="shuffle-avatar">Shuffle avatar</button></div></div><div class="avatar-controls">${Object.entries(avatarOptions).map(([key,options])=>`<div class="field"><label for="avatar-${key}">${avatarLabels[key]}</label><select class="select-input" id="avatar-${key}" data-avatar-part="${key}">${options.map((name,i)=>`<option value="${i}" ${avatarDraft[key]===i?'selected':''}>${name}</option>`).join('')}</select></div>`).join('')}</div></section>`;}
+
+  function makeMatch(players,out='straight',bestOf=1){return {id:uid(),startedAt:new Date().toISOString(),players:players.map(p=>({id:p.id,name:p.name,...(p.avatar?{avatar:{...p.avatar}}:{})})),out,bestOf,finishMode:players.length>2?'placements':'first',visits:[],pending:[],awaitingNext:false,abandoned:false};}
   function freshData(){const players=[{id:uid(),name:'Player 1'},{id:uid(),name:'Player 2'}];const match=makeMatch(players);return {version:1,players,matches:[match],currentId:match.id};}
   function derive(match){
     const count=match.players.length,ranked=count>2&&match.finishMode==='placements';
@@ -157,6 +252,7 @@
     if(!value.players.every(p=>p&&validId(p.id)&&validName(p.name))||new Set(value.players.map(p=>p.id)).size!==value.players.length)return false;
     if(!value.matches.every(m=>m&&validId(m.id)&&Number.isFinite(Date.parse(m.startedAt))&&['double','straight'].includes(m.out)&&[1,3,5].includes(m.bestOf)&&typeof m.abandoned==='boolean'&&Array.isArray(m.players)&&m.players.length>=1&&m.players.length<=8&&m.players.every(p=>p&&validId(p.id)&&validName(p.name))&&new Set(m.players.map(p=>p.id)).size===m.players.length&&Array.isArray(m.visits)&&m.visits.length<=100000&&m.visits.every(v=>v&&Number.isInteger(v.total)&&v.total>=0&&v.total<=180&&[1,2,3].includes(v.darts)&&typeof v.bust==='boolean'&&typeof v.double==='boolean'&&(v.bust||possible[v.darts].has(v.total)))))return false;
     if(new Set(value.matches.map(m=>m.id)).size!==value.matches.length||!value.matches.some(m=>m.id===value.currentId&&!m.abandoned))return false;
+    if([...value.players,...value.matches.flatMap(m=>m.players)].some(p=>p.avatar!==undefined&&!validAvatar(p.avatar)))return false;
     // Replay imported events to reject throws after a winner and impossible finishes.
     for(const match of value.matches){const game=derive(match);if(game.rows.length!==match.visits.length)return false;for(const row of game.rows){if(row.won&&!checkout(row.total,match.out,row.darts))return false;}}
 
@@ -181,6 +277,7 @@
     return true;
   }
   function upgradeCurrentMatch(value){
+    ensureAvatars(value);
     const m=value.matches.find(m=>m.id===value.currentId);
     if(!m||m.players.length<=2||m.finishMode==='placements')return value;
     // Preserve already-played legacy leg boundaries; finish the current leg for placements.
@@ -193,7 +290,7 @@
   let loadWarning='';
   try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const parsed=JSON.parse(raw);if(!validData(parsed))throw new Error('Invalid saved data');data=upgradeCurrentMatch(parsed);}else data=freshData();}
   catch(e){data=freshData();storageOK=false;loadWarning='Saved data could not be loaded. Export this session before closing.';}
-  function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));storageOK=true;}catch(e){storageOK=false;toast('Storage is unavailable or full. Export your data to keep it.');}updateSaved();}
+  function save(){ensureAvatars(data);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(data));storageOK=true;}catch(e){storageOK=false;toast('Storage is unavailable or full. Export your data to keep it.');}updateSaved();}
   function updateSaved(){const state=$('#save-state');state.classList.toggle('error',!storageOK);state.innerHTML=`<span class="dot"></span>${storageOK?'Saved on this device':'Not saved · export data'}`;const note=$('.scoring-note');if(note){note.classList.toggle('error',!storageOK);note.innerHTML=`${icon('shield')}${storageOK?'Every dart saved on this device.':'Not saved. Export your data before closing this tab.'}`;}}
   const current=()=>data.matches.find(m=>m.id===data.currentId);
   const avg=stat=>stat.darts?(stat.points/stat.darts*3).toFixed(1):'—';
@@ -292,7 +389,7 @@
     const locked=waiting||finished,remaining=waiting?last.remaining:g.scores[active],total=hits.reduce((sum,c)=>sum+hitFromCode(c).value,0);
     const route=!locked?checkout(remaining,m.out,3-hits.length):null;
     const rows=historyRows(m),lastCode=hits.at(-1);
-    const roster=m.players.map((p,i)=>`<section class="arcade-player ${i===active?'active':''} ${g.scores[i]===0?'checked-out':''}" aria-label="${esc(p.name)}, ${g.scores[i]===0?ordinal(g.finishOrder.indexOf(i)+1)+' place, checked out':g.scores[i]+' remaining'}"><span class="avatar">${esc(initials(p.name))}</span><div><span class="player-name" title="${esc(p.name)}">${esc(p.name)}</span><span class="playing-label">${rosterStatus(g,i,active,waiting,finished)}</span></div><div class="score-number ${g.scores[i]===0?'is-placement':''}" data-player-score="${i}" data-score-value="${g.scores[i]}">${rosterScore(g,i)}</div><div class="roster-meta"><span>AVG <strong>${avg(g.stats[i])}</strong></span><span>LEGS <strong>${g.wins[i]} / ${Math.ceil(m.bestOf/2)}</strong></span></div></section>`).join('');
+    const roster=m.players.map((p,i)=>`<section class="arcade-player ${i===active?'active':''} ${g.scores[i]===0?'checked-out':''}" aria-label="${esc(p.name)}, ${g.scores[i]===0?ordinal(g.finishOrder.indexOf(i)+1)+' place, checked out':g.scores[i]+' remaining'}">${livePlayerAvatar(p,m,g,i)}<div><span class="player-name" title="${esc(p.name)}">${esc(p.name)}</span><span class="playing-label">${rosterStatus(g,i,active,waiting,finished)}</span></div><div class="score-number ${g.scores[i]===0?'is-placement':''}" data-player-score="${i}" data-score-value="${g.scores[i]}">${rosterScore(g,i)}</div><div class="roster-meta"><span>AVG <strong>${avg(g.stats[i])}</strong></span><span>LEGS <strong>${g.wins[i]} / ${Math.ceil(m.bestOf/2)}</strong></span></div></section>`).join('');
     const tray=Array.from({length:3},(_,i)=>{const code=hits[i],h=code?hitFromCode(code):null;return `<div class="dart-slot ${h?`filled ${hitKind(code)}`:!locked&&i===hits.length?'next':''}"><span>DART ${i+1}</span><strong>${h?code:'—'}</strong>${h?`<em>${h.value} POINT${h.value===1?'':'S'}</em>`:''}</div>`;}).join('');
     const nextName=m.players[g.turn].name;
     $('#screen').innerHTML=`<div class="screen arcade-screen"><div class="page-top"><div><div class="breadcrumb"><span>Play</span><span>/</span><span>Match room</span></div><h1>301<span>ARCADE MODE</span></h1></div><div class="page-top-right"><span class="tag match-status"><span class="dot"></span>${finished?'GAME OVER':'LIVE MATCH'}</span><button class="icon-btn" data-action="rules" aria-label="Game rules">${icon('board')}</button></div></div>
@@ -308,7 +405,7 @@
     return {played,wins,average:dartCount?(points/dartCount*3).toFixed(1):'—',best};
   }
   function renderPlayers(){
-    $('#screen').innerHTML=`<div class="screen"><div class="page-top screen-top"><div><div class="breadcrumb"><span>Club</span><span>/</span><span>Players</span></div><h1>Players.</h1><p>Saved players. Every match adds to their story.</p></div><button class="btn dark" data-action="add-player">${icon('plus')}Add player</button></div><div class="profile-grid">${data.players.map(p=>{const s=playerStats(p.id);return `<section class="profile"><div class="profile-head"><span class="avatar">${esc(initials(p.name))}</span><h2>${esc(p.name)}</h2><button class="icon-btn" data-action="edit-player" data-id="${esc(p.id)}" aria-label="Edit ${esc(p.name)}">${icon('edit')}</button></div><div class="profile-stats"><div><strong>${s.played}</strong><span>Matches</span></div><div><strong>${s.wins}</strong><span>Wins</span></div><div><strong>${s.average}</strong><span>3-dart avg.</span></div></div><div class="profile-foot">Best visit: ${s.best||'—'} <span style="margin:0 8px">·</span> ${s.played?Math.round(s.wins/s.played*100):0}% win rate</div></section>`;}).join('')}</div>${!data.players.length?'<div class="empty-screen"><h2>Your first player starts here.</h2><p>Add a name to join the next match.</p></div>':''}<p class="muted" style="font-size:10px;margin-top:32px;line-height:1.7">Matches and wins count completed games. Averages and best visits include all saved games.</p></div>`;
+    $('#screen').innerHTML=`<div class="screen"><div class="page-top screen-top"><div><div class="breadcrumb"><span>Club</span><span>/</span><span>Players</span></div><h1>Players.</h1><p>Saved players. Every match adds to their story.</p></div><button class="btn dark" data-action="add-player">${icon('plus')}Add player</button></div><div class="profile-grid">${data.players.map(p=>{const s=playerStats(p.id);return `<section class="profile"><div class="profile-head"><span class="avatar">${playerAvatar(p)}</span><h2>${esc(p.name)}</h2><button class="icon-btn" data-action="edit-player" data-id="${esc(p.id)}" aria-label="Edit ${esc(p.name)}">${icon('edit')}</button></div><div class="profile-stats"><div><strong>${s.played}</strong><span>Matches</span></div><div><strong>${s.wins}</strong><span>Wins</span></div><div><strong>${s.average}</strong><span>3-dart avg.</span></div></div><div class="profile-foot">Best visit: ${s.best||'—'} <span style="margin:0 8px">·</span> ${s.played?Math.round(s.wins/s.played*100):0}% win rate</div></section>`;}).join('')}</div>${!data.players.length?'<div class="empty-screen"><h2>Your first player starts here.</h2><p>Add a name to join the next match.</p></div>':''}<p class="muted" style="font-size:10px;margin-top:32px;line-height:1.7">Matches and wins count completed games. Averages and best visits include all saved games.</p></div>`;
   }
   function renderHistory(){
     const matches=data.matches.filter(m=>m.visits.length||pendingHits(m).length).slice().reverse();
@@ -334,7 +431,7 @@
     const hits=[...m.pending];if(terminal)finishDartVisit(m);
     const after=liveGame(m);save();render();
     const type=sequence.bust?'bust':after.winner!==null?(after.ranked?'placements':'win'):sequence.won?(after.ranked?(after.rows.at(-1).legFinished?'leg-end':'checkout'):'leg'):sequence.total===180&&hits.length===3?'maximum':hitKind(code);
-    animateHit(code,type,sequence.total);
+    animateHit(code,type,sequence.total,m.players[after.winner!==null?after.winner:player]);
     if(sequence.won)celebrate();
     const score=$(`[data-player-score="${player}"]`);if(score)score.classList.add('score-pop');
     $('[data-live-score]')?.classList.add('score-pop');
@@ -365,14 +462,22 @@
     else return toast('No darts to undo yet.');
     m.awaitingNext=false;save();render();toast(`${name}: ${code?hitName(code)+' undone.':'previous total-entry visit undone.'}`);announce('Last dart undone. Score, turn, and match state restored.');
   }
-  function animateHit(code,type,total){
+  function animateHit(code,type,total,celebratingPlayer){
     clearTimeout(fxTimer);
     document.querySelectorAll('.board-segment').forEach(el=>{if(el.dataset.code===code)el.classList.add('hit-flash');});
     const hit=hitFromCode(code),special={double:['DOUBLE',`+${hit.value}`,'2 × '+code.slice(1)],triple:['TRIPLE',`+${hit.value}`,'3 × '+code.slice(1)],bull:[code==='BULL'?'BULLSEYE':'OUTER BULL',`+${hit.value}`,code==='BULL'?'DEAD CENTER':'ON TARGET'],checkout:['CHECKED OUT',ordinal(derive(current()).rows.at(-1)?.placement||1),'PLACE SECURED'],'leg-end':['FINAL CHECKOUT','LEG OVER','ALL PLACES DECIDED'],placements:['FINAL CHECKOUT','GAME OVER','STANDINGS COMPLETE'],maximum:['ONE HUNDRED & EIGHTY','180','MAXIMUM'],bust:['BUST','NO SCORE','VISIT RESET'],win:['GAME SHOT','WINNER','MATCH COMPLETE'],leg:['GAME SHOT','LEG WON','NEXT LEG READY'],miss:['MISS','0','NEXT DART'],single:['SINGLE',`+${hit.value}`,'KEEP IT GOING']}[type];
     playHitSound(type==='checkout'||type==='leg-end'?'leg':type==='placements'?'win':type);
-    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const dancing=['maximum','checkout','leg','leg-end','win','placements'].includes(type)&&celebratingPlayer;
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduced&&!dancing)return;
     const host=$('#fx-host');if(!host)return;
     const callout=$('.board-turn-callout');if(callout)callout.style.visibility='hidden';
+    if(dancing){
+      host.innerHTML=`<div class="dance-celebration"><span class="eyebrow">${type==='maximum'?'180 · MAXIMUM':type==='win'||type==='placements'?'MATCH WINNER':'CHECKOUT · GAME SHOT'}</span>${dancingAvatar(celebratingPlayer)}<strong>${esc(celebratingPlayer.name)}</strong><span class="dance-subtitle">${type==='maximum'?'A perfect visit.':type==='win'||type==='placements'?'Victory looks good on you.':'That deserves a dance.'}</span></div>`;
+      announce(`${celebratingPlayer.name}: ${type==='maximum'?'180!':type==='win'||type==='placements'?'Match won!':'Checkout!'} Celebration.`);
+      fxTimer=setTimeout(()=>{host.innerHTML='';if(callout)callout.style.visibility='';},reduced?1800:3400);
+      return;
+    }
     host.innerHTML=`<div class="arcade-fx ${type}"><div class="fx-aura"></div><i class="fx-ring"></i>${type==='bull'?'<i class="fx-ring"></i>':''}${!['single','miss'].includes(type)?Array.from({length:18},(_,i)=>`<i class="fx-spark" style="--angle:${i*20}deg;--delay:${i%3*.02}s"></i>`).join(''):''}<div class="fx-caption"><small>${special[0]}</small><strong>${special[1]}</strong><span>${special[2]}</span></div></div>`;
     if(!['single','miss'].includes(type))$('.board-stage')?.classList.add('impact');
     fxTimer=setTimeout(()=>{host.innerHTML='';$('.board-stage')?.classList.remove('impact');if(callout)callout.style.visibility='';},1100);
@@ -394,17 +499,31 @@
   let selectedPlayers=[];
   function newMatchDialog(rematch=false){
     const m=current(),g=derive(m);selectedPlayers=m.players.map(p=>p.id).filter(id=>data.players.some(p=>p.id===id));if(!selectedPlayers.length)selectedPlayers=data.players.slice(0,2).map(p=>p.id);
-    openDialog(rematch?'Run it back.':'Set up your match',`<p>Start at 301. Take turns. Make every dart count.</p><form id="new-match-form"><div class="field"><span class="field-label">Players <span class="muted" style="font-weight:400">· choose 1–8 in throwing order</span></span><div id="player-choices" class="player-choices"></div><div class="inline-add"><input class="text-input" id="quick-player-name" aria-label="New player name" placeholder="Add a new player…" maxlength="32"><button type="button" class="btn" data-action="quick-add-player" aria-label="Add player">${icon('plus')}</button></div><p id="setup-error" class="input-error" role="alert" hidden></p></div><div class="form-row"><div class="field"><label for="out-rule">Finish rule</label><select class="select-input" id="out-rule"><option value="double" ${m.out==='double'?'selected':''}>Double out</option><option value="straight" ${m.out==='straight'?'selected':''}>Straight out</option></select></div><div class="field"><label for="best-of">Match length</label><select class="select-input" id="best-of">${[1,3,5].map(n=>`<option value="${n}" ${m.bestOf===n?'selected':''}>${n===1?'Single leg':`First to ${Math.ceil(n/2)} legs`}</option>`).join('')}</select></div></div><div class="dialog-info">${g.winner===null&&(m.visits.length||pendingHits(m).length)?'Your current match will be saved as ended early. ':''}Each player starts at 301. With 3–8 players, checked-out players skip their turns; each leg continues until only one player is left. The first checkout wins the leg.</div><div class="dialog-actions"><button type="button" class="btn" data-action="close-dialog">Cancel</button><button class="btn primary" type="submit">Let’s play ${icon('arrow')}</button></div></form>`);renderChoices();
+    openDialog(rematch?'Run it back.':'Set up your match',`<p>Start at 301. Take turns. Make every dart count.</p><form id="new-match-form"><div class="field"><span class="field-label">Players <span class="muted" style="font-weight:400">· choose 1–8 in throwing order</span></span><div id="player-choices" class="player-choices"></div><div class="inline-add"><input class="text-input" id="quick-player-name" aria-label="New player name" placeholder="Add a new player…" maxlength="32"><button type="button" class="btn" data-action="quick-add-player" aria-label="Add player">${icon('plus')}</button></div><p id="setup-error" class="input-error" role="alert" hidden></p></div><div class="form-row"><div class="field"><label for="out-rule">Finish rule</label><select class="select-input" id="out-rule"><option value="straight" ${!rematch||m.out==='straight'?'selected':''}>Straight out</option><option value="double" ${rematch&&m.out==='double'?'selected':''}>Double out</option></select></div><div class="field"><label for="best-of">Match length</label><select class="select-input" id="best-of">${[1,3,5].map(n=>`<option value="${n}" ${m.bestOf===n?'selected':''}>${n===1?'Single leg':`First to ${Math.ceil(n/2)} legs`}</option>`).join('')}</select></div></div><div class="dialog-info">${g.winner===null&&(m.visits.length||pendingHits(m).length)?'Your current match will be saved as ended early. ':''}Each player starts at 301. With 3–8 players, checked-out players skip their turns; each leg continues until only one player is left. The first checkout wins the leg.</div><div class="dialog-actions"><button type="button" class="btn" data-action="close-dialog">Cancel</button><button class="btn primary" type="submit">Let’s play ${icon('arrow')}</button></div></form>`);renderChoices();
   }
   function renderChoices(){const box=$('#player-choices');if(!box)return;box.innerHTML=data.players.map(p=>`<label class="player-choice"><input type="checkbox" data-player-id="${esc(p.id)}" ${selectedPlayers.includes(p.id)?'checked':''}><span>${esc(p.name)}</span><span class="order">${selectedPlayers.includes(p.id)?`Throws ${selectedPlayers.indexOf(p.id)+1}`:''}</span></label>`).join('')||'<p class="muted" style="font-size:12px">Add a player below to start.</p>';}
   function setupError(message){$('#setup-error').textContent=message;$('#setup-error').hidden=false;}
   function addQuickPlayer(){const field=$('#quick-player-name'),name=field.value.trim();if(!name)return setupError('Give your player a name.');if(data.players.some(p=>p.name.toLowerCase()===name.toLowerCase()))return setupError('That player already exists. Select them above.');const p={id:uid(),name};data.players.push(p);if(selectedPlayers.length<8)selectedPlayers.push(p.id);field.value='';$('#setup-error').hidden=true;save();renderChoices();}
   function startMatch(){if(!selectedPlayers.length||selectedPlayers.length>8)return setupError('Choose between 1 and 8 players.');const old=current();if((old.visits.length||pendingHits(old).length)&&derive(old).winner===null)old.abandoned=true;if(!old.visits.length&&!pendingHits(old).length)data.matches=data.matches.filter(m=>m.id!==old.id);const match=makeMatch(selectedPlayers.map(id=>data.players.find(p=>p.id===id)),$('#out-rule').value,Number($('#best-of').value));data.matches.push(match);data.currentId=match.id;precisionMultiplier='S';tab='match';save();closeDialog();render();toast('Match on. Good darts.');}
-  function playerDialog(id){const p=data.players.find(p=>p.id===id);openDialog(p?'Edit player':'Meet your next regular',`<p>${p?'Player statistics stay with this profile when you change the name.':'Add a name. We’ll keep their scores and statistics here.'}</p><form id="player-form" data-id="${esc(id||'')}"><div class="field"><label for="player-name">Player name</label><input class="text-input" id="player-name" maxlength="32" required autocomplete="off" value="${p?esc(p.name):''}" placeholder="e.g. Jamie" autofocus><p id="player-error" class="input-error" role="alert" hidden></p></div><div class="dialog-actions">${p?'<button type="button" class="btn danger" data-action="remove-player" data-id="'+esc(p.id)+'">Remove player</button>':'<button type="button" class="btn" data-action="close-dialog">Cancel</button>'}<button type="submit" class="btn primary">${p?'Save changes':'Add player'}</button></div></form>`);$('#player-name').focus();}
-  function savePlayer(form){const name=$('#player-name').value.trim(),id=form.dataset.id;if(!name||data.players.some(p=>p.id!==id&&p.name.toLowerCase()===name.toLowerCase())){const error=$('#player-error');error.textContent=name?'A player with this name already exists.':'Enter a player name.';error.hidden=false;return;}const p=data.players.find(p=>p.id===id);if(p){p.name=name;const m=current();if(derive(m).winner===null)m.players.filter(p=>p.id===id).forEach(p=>p.name=name);}else data.players.push({id:uid(),name});save();closeDialog();render();toast(p?'Player updated.':'Player added.');}
+  function playerDialog(id){const p=data.players.find(p=>p.id===id);avatarDraft={...(p?.avatar||uniqueAvatar(uid(),new Set(data.players.map(p=>JSON.stringify(p.avatar)))))};openDialog(p?'Edit player':'Meet your next regular',`<p>${p?'Player statistics stay with this profile when you change the name.':'Add a name. We’ll keep their scores and statistics here.'}</p><form id="player-form" data-id="${esc(id||'')}"><div class="field"><label for="player-name">Player name</label><input class="text-input" id="player-name" maxlength="32" required autocomplete="off" value="${p?esc(p.name):''}" placeholder="e.g. Jamie" autofocus><p id="player-error" class="input-error" role="alert" hidden></p></div>${avatarEditor()}<div class="dialog-actions">${p?'<button type="button" class="btn danger" data-action="remove-player" data-id="'+esc(p.id)+'">Remove player</button>':'<button type="button" class="btn" data-action="close-dialog">Cancel</button>'}<button type="submit" class="btn primary">${p?'Save changes':'Add player'}</button></div></form>`);$('#player-name').focus();}
+  function savePlayer(form){const name=$('#player-name').value.trim(),id=form.dataset.id;if(!name||data.players.some(p=>p.id!==id&&p.name.toLowerCase()===name.toLowerCase())){const error=$('#player-error');error.textContent=name?'A player with this name already exists.':'Enter a player name.';error.hidden=false;return;}const p=data.players.find(p=>p.id===id);if(p){p.name=name;p.avatar={...avatarDraft};const m=current();if(derive(m).winner===null)m.players.filter(p=>p.id===id).forEach(p=>p.name=name);}else data.players.push({id:uid(),name,avatar:{...avatarDraft}});save();closeDialog();render();toast(p?'Player updated.':'Player added.');}
   function removePlayerDialog(id){const p=data.players.find(p=>p.id===id);openDialog('Remove player?',`<p>Remove <strong>${esc(p.name)}</strong> from your player list? Their saved matches and current game will stay intact.</p><div class="dialog-actions"><button class="btn" data-action="close-dialog">Keep player</button><button class="btn danger" data-action="confirm-remove" data-id="${esc(id)}">Remove player</button></div>`);}
-  function matchDetail(id){const m=data.matches.find(m=>m.id===id),g=derive(m);openDialog('Match record',`<p>${esc(dateLabel(m.startedAt))} · 301 · ${m.out==='double'?'Double':'Straight'} out · ${m.bestOf===1?'Single leg':`First to ${Math.ceil(m.bestOf/2)} legs`}</p><div class="dialog-info" style="margin-bottom:22px">${g.winner!==null?`${esc(m.players[g.winner].name)} won the match`:m.abandoned?'Ended early':'Match in progress'}<br>${m.players.map((p,i)=>`${esc(p.name)}: ${g.wins[i]} leg${g.wins[i]===1?'':'s'}`).join(' · ')}</div>${g.ranked?g.legResults.map(result=>rankingsMarkup(m,result)).join(''):''}${visitsTable(m,historyRows(m),Infinity)}<div class="dialog-actions"><button class="btn" data-action="close-dialog">Close</button>${id===data.currentId?'<button class="btn primary" data-action="return-match">Go to match</button>':''}</div>`);}
+  function matchDetail(id){const m=data.matches.find(m=>m.id===id),g=derive(m);openDialog('Match record',`<p>${esc(dateLabel(m.startedAt))} · 301 · ${m.out==='double'?'Double':'Straight'} out · ${m.bestOf===1?'Single leg':`First to ${Math.ceil(m.bestOf/2)} legs`}</p><div class="dialog-info" style="margin-bottom:22px">${g.winner!==null?`${esc(m.players[g.winner].name)} won the match`:m.abandoned?'Ended early':'Match in progress'}<br>${m.players.map((p,i)=>`${esc(p.name)}: ${g.wins[i]} leg${g.wins[i]===1?'':'s'}`).join(' · ')}</div>${g.ranked?g.legResults.map(result=>rankingsMarkup(m,result)).join(''):''}${visitsTable(m,historyRows(m),Infinity)}<div class="dialog-actions"><button class="btn danger" data-action="delete-match" data-id="${esc(id)}">Delete game</button><button class="btn" data-action="close-dialog">Close</button>${id===data.currentId?'<button class="btn primary" data-action="return-match">Go to match</button>':''}</div>`);}
 
+  function deleteMatchDialog(id){
+    const m=data.matches.find(m=>m.id===id);if(!m)return;
+    openDialog('Delete this game?',`<p><strong>${m.players.map(p=>esc(p.name)).join(' vs ')}</strong><br>${esc(dateLabel(m.startedAt))}</p><p>This removes the game's scores and its contribution to player statistics. Player profiles are kept. This cannot be undone.${id===data.currentId?' A fresh game with the same players and rules will be ready in the match room.':''}</p><div class="dialog-actions"><button class="btn" data-action="match-detail" data-id="${esc(id)}" autofocus>Keep game</button><button class="btn danger" data-action="confirm-delete-match" data-id="${esc(id)}">Delete game</button></div>`);
+  }
+  function deleteMatch(id){
+    const m=data.matches.find(m=>m.id===id);if(!m)return;
+    data.matches=data.matches.filter(game=>game.id!==id);
+    if(id===data.currentId){
+      const replacement=makeMatch(m.players,m.out,m.bestOf);
+      data.matches.push(replacement);data.currentId=replacement.id;
+      precisionMultiplier='S';precisionOpen=false;
+    }
+    save();closeDialog();render();toast('Game deleted.');announce('Game deleted. Player statistics updated.');
+  }
   function rulesDialog(){openDialog('301. Now every dart counts.',`<p>Start at 301 and tap the segment each dart hit. The first player to reach exactly zero wins the leg.</p><ul class="rule-list"><li><strong>Tap the board:</strong> the wide areas score the number shown. The outer narrow ring doubles it; the inner narrow ring triples it. Outer bull scores 25; bullseye scores 50.</li><li><strong>Three darts per visit:</strong> each tap is saved immediately. After the third dart, select Next player. A miss scores zero and uses one dart. End visit early records only the darts you threw.</li><li><strong>Double out:</strong> finish on a double or the bullseye. A single or triple reaching zero is a bust. Straight out allows any scoring segment.</li><li><strong>Bust:</strong> going below zero or leaving 1 in double out resets the whole visit. The board pauses so you can pass to the next player.</li><li><strong>Undo dart:</strong> removes one dart and restores the turn, score, leg, and statistics, even after a bust, checkout, or win. Older total-entry records undo as a whole visit.</li><li><strong>Precision entry:</strong> use the larger number buttons below the board, with Single, Double, or Triple selected. On the board, arrow keys select segments; Enter or Space records the focused segment. Ctrl/⌘ Z undoes.</li><li><strong>Three to eight players:</strong> the first checkout wins the leg, then play continues for the remaining places. Checked-out players are skipped. The leg ends when only one player has not checked out. In a multi-leg match, the next leg starts after places are decided. The opening player rotates between legs.</li></ul><div class="dialog-info">Every dart, including an unfinished visit, is saved in this browser. Keep the HTML file in the same location. Export a backup before clearing browser data or switching devices. Averages use actual darts thrown; bust visits score zero. Arcade sound is optional, and reduced-motion settings are respected.</div><div class="dialog-actions"><button class="btn primary" data-action="close-dialog">Back to the board ${icon('arrow')}</button></div>`);}
   function exportData(){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`oche-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Backup exported. Keep it for your next device.');}
   async function importData(file){if(!file)return;if(file.size>15000000)return toast('This file is too large. Choose an OCHE backup under 15 MB.');try{const value=JSON.parse(await file.text());if(!validData(value))throw new Error('Invalid backup');pendingImport=value;openDialog('Restore your backup?',`<p>This backup contains <strong>${value.players.length} players</strong> and <strong>${value.matches.length} matches</strong>. Restoring replaces the players and matches on this device.</p><div class="dialog-info">Export your current data first if you want to keep a separate copy.</div><div class="dialog-actions"><button class="btn" data-action="export">Export current</button><button class="btn primary" data-action="confirm-import">Restore backup</button></div>`);}catch(e){toast('That file is not a valid OCHE backup. Your data is unchanged.');}}
@@ -420,18 +539,22 @@
     else if(a==='sound'){data.settings={...data.settings,sound:!data.settings?.sound};save();updateSound();if(data.settings.sound)playHitSound('double');}
     else if(a==='new-match'||a==='rematch')newMatchDialog(a==='rematch');
     else if(a==='close-dialog')closeDialog();
+    else if(a==='shuffle-avatar'){avatarDraft=uniqueAvatar(uid(),new Set(data.players.map(p=>JSON.stringify(p.avatar))));$('#avatar-preview').innerHTML=avatarSVG(avatarDraft);document.querySelectorAll('[data-avatar-part]').forEach(el=>el.value=avatarDraft[el.dataset.avatarPart]);}
     else if(a==='quick-add-player')addQuickPlayer();
     else if(a==='add-player')playerDialog();
     else if(a==='edit-player')playerDialog(b.dataset.id);
     else if(a==='remove-player')removePlayerDialog(b.dataset.id);
     else if(a==='confirm-remove'){data.players=data.players.filter(p=>p.id!==b.dataset.id);save();closeDialog();render();toast('Player removed. Match records kept.');}
     else if(a==='match-detail')matchDetail(b.dataset.id);
+    else if(a==='delete-match')deleteMatchDialog(b.dataset.id);
+    else if(a==='confirm-delete-match')deleteMatch(b.dataset.id);
     else if(a==='return-match'){closeDialog();tab='match';render();}
     else if(a==='rules')rulesDialog();
     else if(a==='export')exportData();
     else if(a==='import')$('#import-file').click();
     else if(a==='confirm-import'&&pendingImport){data=upgradeCurrentMatch(pendingImport);pendingImport=null;precisionMultiplier='S';tab='match';save();closeDialog();render();toast('Backup restored. Welcome back.');}
   });
+  document.addEventListener('change',event=>{const key=event.target.dataset.avatarPart;if(!key||!Object.hasOwn(avatarOptions,key)||!avatarDraft)return;avatarDraft[key]=Number(event.target.value);$('#avatar-preview').innerHTML=avatarSVG(avatarDraft);});
   document.addEventListener('submit',event=>{event.preventDefault();if(event.target.id==='new-match-form')startMatch();else if(event.target.id==='player-form')savePlayer(event.target);});
   document.addEventListener('change',event=>{const id=event.target.dataset.playerId;if(id){if(event.target.checked){if(selectedPlayers.length>=8){event.target.checked=false;setupError('Up to 8 players can join a match.');return;}selectedPlayers.push(id);}else selectedPlayers=selectedPlayers.filter(p=>p!==id);const activeId=id;renderChoices();Array.from(document.querySelectorAll('[data-player-id]')).find(el=>el.dataset.playerId===activeId)?.focus();}if(event.target.id==='import-file'){importData(event.target.files[0]);event.target.value='';}});
   document.addEventListener('keydown',event=>{
@@ -456,7 +579,7 @@
   // Keep multiple open copies in sync instead of overwriting another tab's visits.
   window.addEventListener('storage',event=>{if(event.key!==STORAGE_KEY||!event.newValue)return;try{const next=JSON.parse(event.newValue);if(validData(next)){data=upgradeCurrentMatch(next);precisionMultiplier='S';closeDialog();render();toast('Match updated from another tab.');}}catch(e){/* Preserve the current session on invalid external data. */}});
   document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
-  render();if(loadWarning){updateSaved();toast(loadWarning);}else save();
+  ensureAvatars(data);render();if(loadWarning){updateSaved();toast(loadWarning);}else save();
   </script>
 </body>
 </html>
