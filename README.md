@@ -8,7 +8,7 @@ Open **index.html** directly in a modern browser. The entire app is in one file:
 - **Tap or click where each dart landed.** Singles score the displayed number, the outer narrow ring doubles it, and the inner narrow ring triples it. Outer bull scores 25; bullseye scores 50.
 - Each dart immediately updates the score and is saved, even in an unfinished visit. Three hit slots show the current visit.
 - Board clicks and taps place the dart tip at the exact hit location. Positions scale with the board and are retained through reloads, undo, and backups. Keyboard entries, precision buttons, and older records use the segment center because they have no recorded pointer location.
-- After three darts, a bust, or a leg win, the board pauses. Choose **Next player** when ready. Extra board taps cannot score for someone else during the pause.
+- After three darts, a bust, or a leg win, the board pauses. The **Next player** popup counts down three seconds, then advances automatically; click the button to advance immediately. The countdown starts after the score animation and pauses while a dialog is open or the browser tab is hidden. Extra board taps cannot score for someone else during the pause.
 - Use **Miss · 0** for a miss. **End visit early** saves only the darts already thrown.
 - **Undo dart** reverses one dart, including after a bust, leg win, match win, or handover. Old records entered as visit totals undo as a complete visit.
 - On small screens, **Precision entry** provides larger number buttons with Single, Double, and Triple selectors, plus bull buttons. Miss and undo controls also appear immediately below the board.
