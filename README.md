@@ -5,6 +5,7 @@ Open **index.html** directly in a modern browser. The entire app is in one file:
 ## Playing
 
 - Choose **New match** for 1–8 players, straight-out or double-out, and a leg-win target. Existing players and saved games remain available.
+- New match and rematch setup randomize the selected players’ throwing order. Use **Shuffle order** to draw again or drag a player’s dotted grip to reorder with mouse or touch. Keyboard users can focus the grip and press Up or Down. The displayed order is saved with the match; the opening player still rotates each leg.
 - **Tap or click where each dart landed.** Singles score the displayed number, the outer narrow ring doubles it, and the inner narrow ring triples it. Outer bull scores 25; bullseye scores 50.
 - Each dart immediately updates the score and is saved, even in an unfinished visit. Three hit slots show the current visit.
 - Board clicks and taps place the dart tip at the exact hit location. Positions scale with the board and are retained through reloads, undo, and backups. Keyboard entries, precision buttons, and older records use the segment center because they have no recorded pointer location.
@@ -18,6 +19,8 @@ Open **index.html** directly in a modern browser. The entire app is in one file:
 With **3–8 players**, the first checkout earns first place and the leg win, while the others keep playing for their places. Checked-out players are skipped and their large scoreboard number shows their place (1st, 2nd, etc.) instead of zero. Players still throwing keep their remaining score. The leg ends when only one player has not checked out; that player takes the final place with their remaining score recorded. Final standings appear in the result panel and match history. Undo also reverses a placement and can reopen a completed leg or match.
 
 For multi-leg matches, play completes the remaining places before starting the next leg or declaring the match winner. The first player to reach the chosen leg-win target wins the match after that leg's places are decided. Solo and two-player games finish the leg at the winning checkout. The opening player rotates each leg. Three-dart averages use actual darts thrown; bust visits contribute zero points. Pending visits provisionally contribute to the live average until the visit finishes.
+
+Player profiles include **Noob**: the number of completed games finished in last place, using the final leg’s standings. Two-player losses count; solo, unfinished, and older multiplayer games without recorded final placements do not. Undoing a finish or deleting a game updates the count automatically.
 
 ## Player avatars
 
@@ -46,6 +49,8 @@ The ladder doubles and caps at 50 wins. Existing completed wins count immediatel
 
 ## Arcade feedback and accessibility
 
+The throwing player has an enlarged lineup card. After a completed three-dart visit of 26 points or fewer, or a bust, up to two standby players react with playful roast bubbles. On desktop, oversized comic bubbles burst into the board area; mobile layouts keep the phrases within wider player cards. Bubbles allow clicks through them. Checkouts and solo games are excluded. Bubbles clear on handover or undo; reduced-motion mode removes their entrance animation.
+
 Doubles, triples, outer bull, bullseyes, busts, checkouts, and a 180 visit have score animations. A 180, checkout, or match win triggers a full-body avatar celebration with Rickroll-style step-touches, alternating bent-arm gestures, shoulder turns, and a vintage microphone stand. The dancer keeps the player’s customized appearance. The next-player countdown begins after the 4.4-second dance, and undo cancels it immediately. Reduced-motion settings show a brief, static victory pose instead. Dart markers and the last-hit readout retain scoring information after the effect ends. **Sound** optionally enables locally synthesized arcade tones; it starts muted and the preference is saved.
 
 Reduced-motion settings suppress dramatic effects. The board supports keyboard input: Tab to the board, use arrow keys to select a segment, and Enter or Space to score it. Ctrl/Cmd+Z undoes the last dart. Precision entry uses standard accessible buttons.
@@ -59,6 +64,19 @@ Players, visits, pending darts, handover state, and sound preference are saved i
 Older current multiplayer games adopt placement play. Already-played leg boundaries are retained; a current leg that stopped at its first checkout can continue for the remaining places. Archived older matches retain their original results.
 
 ## Verification
+
+The lineup, Noob stat, and roast regression checks can be run with Node.js, Python, and Playwright CLI. Start `python -m http.server 8765 --bind 127.0.0.1` in this folder, then run the following in another terminal. The drag check uses Chromium touch emulation and the eight-player fixture created by the playing-order check, so run them in this order:
+
+```powershell
+node tests/noob-stats-check.cjs
+playwright-cli -s=oche-regression open http://127.0.0.1:8765/index.html
+playwright-cli -s=oche-regression run-code --filename=tests/playing-order-check.js
+playwright-cli -s=oche-regression run-code --filename=tests/lineup-drag-check.js
+playwright-cli -s=oche-regression run-code --filename=tests/standby-roast-check.js
+playwright-cli -s=oche-regression close
+```
+
+These checks replace OCHE data in their disposable browser session. Stop the local server when finished.
 
 The browser tests run against the local HTML file with networking disabled. They cover every board scoring surface, dart-level persistence, busts, undo across legs and wins, legacy saves, eight-player turns, backups, keyboard and touch input, responsive widths, reduced motion, and animation triggers.
 
