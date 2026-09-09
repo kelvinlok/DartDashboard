@@ -1,0 +1,30 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const html = fs.readFileSync(require('node:path').join(__dirname, '../index.html'), 'utf8');
+const derive = html.slice(html.indexOf('  function derive(match)'), html.indexOf('  function validData'));
+const stats = html.slice(html.indexOf('  function playerStats(id)'), html.indexOf('  function renderPlayers'));
+const context = vm.createContext({ data: { matches: [] } });
+vm.runInContext(`${derive}\nconst liveGame=derive;\n${stats}`, context);
+const visit = total => ({ total, darts: 3, double: false, bust: false });
+const match = (count, totals, extra = {}) => ({ players: Array.from({ length: count }, (_, i) => ({ id: String(i) })), visits: totals.map(visit), out: 'straight', bestOf: 1, finishMode: count > 2 ? 'placements' : 'first', abandoned: false, ...extra });
+const counts = game => {
+  context.data.matches = [game];
+  return game.players.map(p => vm.runInContext(`playerStats('${p.id}').noob`, context));
+};
+assert.deepEqual(counts(match(2, [180, 0, 121])), [0, 1], 'Two-player loser counts');
+assert.deepEqual(counts(match(1, [180, 121])), [0], 'Solo never counts');
+const ranked = match(3, [180, 180, 0, 121, 121]);
+assert.deepEqual(counts(ranked), [0, 0, 1], 'Only last place counts');
+ranked.visits.pop();
+assert.deepEqual(counts(ranked), [0, 0, 0], 'Undoing final placement removes the count');
+assert.deepEqual(counts(match(3, [180, 180, 0, 121], { abandoned: true })), [0, 0, 0], 'Ended early never counts');
+assert.deepEqual(counts(match(3, [180, 180, 0, 121], { finishMode: 'first' })), [0, 0, 0], 'Legacy multiplayer has no reliable last place');
+// First leg: 0 wins, 2 last. Final leg starts at 1: 0 wins, 1 last.
+const multi = match(3, [180, 180, 0, 121, 121, 0, 180, 180, 0, 0, 121, 0, 121], { bestOf: 3 });
+assert.deepEqual(counts(multi), [0, 1, 0], 'Count final standings once, not last place in earlier legs');
+context.data.matches = [match(2, [180, 0, 121]), match(2, [180, 0, 121])];
+assert.equal(vm.runInContext("playerStats('1').noob", context), 2, 'Counts accumulate across games');
+context.data.matches.pop();
+assert.equal(vm.runInContext("playerStats('1').noob", context), 1, 'Deleting a game recalculates the count');
+console.log('Noob stat checks passed.');
