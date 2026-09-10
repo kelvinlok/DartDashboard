@@ -1,0 +1,75 @@
+async page => {
+  const assert = (ok, message) => { if (!ok) throw new Error(message); };
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.setViewportSize({width:1440,height:1100});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  const saved = () => page.evaluate(() => JSON.parse(localStorage.getItem('oche.301.v1')));
+  const fixture = await saved(), p = fixture.players[0];
+  p.name = 'Player 2'; fixture.players[1].name = 'Player 1';
+  p.rewards = {name:'maximum',background:'gold',frame:'none',title:'gold',stamp:'none',pose:'mic-drop'};
+  const match = fixture.matches[0];
+  match.players = fixture.players.map(({id,name,avatar}) => ({id,name,avatar}));
+  match.visits = [180,0,121].map(total => ({total,darts:3,bust:false,double:false}));
+  await page.evaluate(d => localStorage.setItem('oche.301.v1', JSON.stringify(d)), fixture);
+  await page.reload();
+  const open = async () => {
+    await page.locator('[data-tab="players"]').first().click();
+    await page.locator('.profile [data-action="achievements"]').first().click();
+  };
+  const select = (slot, value) => page.locator('#reward-' + slot).selectOption(value);
+  const currentMode = () => page.locator('.achievement-sample').getAttribute('data-preview-mode');
+  const has = selector => page.locator('.achievement-sample ' + selector).count();
+  await open();
+  assert(await currentMode() === 'equipped', 'Open on actual equipment');
+  assert(await has('.name-maximum') === 1, 'Name matches saved Maximum style');
+  assert(await has('.background-gold') === 1, 'Background matches saved First Blood style');
+  assert(await has('.reward-frame') === 0, 'None means no avatar frame');
+  assert((await page.locator('.achievement-sample .reward-title').textContent()).includes('First blood'), 'Title matches equipment');
+  assert(await page.locator('.achievement-stamp-preview strong').textContent() === 'None', 'No stamp selected');
+  await page.locator('#dialog').screenshot({path:'.playwright-cli/equipment-preview-fixed.png'});
+
+  const beforeBrowse = JSON.stringify((await saved()).players[0].rewards);
+  await page.locator('[data-action="preview-achievement"][data-reward="bull"]').click();
+  assert(await currentMode() === 'reward' && await has('.name-bull') === 1, 'Locked reward can still be previewed');
+  assert(await page.locator('[data-action="equip-achievement"]').isDisabled(), 'Preview does not unlock equipment');
+  await page.locator('[data-action="achievement-preview-mode"][data-mode="equipped"]').click();
+  assert(await has('.name-maximum') === 1 && await has('.reward-frame') === 0, 'Switch back to equipped combination');
+  assert(JSON.stringify((await saved()).players[0].rewards) === beforeBrowse, 'Browsing never changes saved equipment');
+  await page.locator('[data-action="achievement-preview-mode"][data-mode="reward"]').click();
+  await select('name','ice');
+  assert(await currentMode() === 'equipped' && await has('.name-ice') === 1, 'Changing equipment leaves reward preview');
+  assert(await has('.background-gold') === 1, 'Other slots keep their equipped values');
+  await select('background','none'); assert(await has('.reward-background') === 0, 'Clear background updates preview');
+  await select('frame','ice'); assert(await has('.frame-ice') === 1, 'Frame updates preview');
+  await select('title','none'); assert(await has('.reward-title') === 0, 'Clear title updates preview');
+  await select('stamp','maximum');
+  assert(await page.locator('.achievement-stamp-preview strong').textContent() === 'Maximum', 'Stamp preview updates');
+  await select('pose','bow');
+  assert(await page.locator('#reward-pose-preview [data-victory-pose="bow"]').count() === 1, 'Changing pose shows new pose');
+  await select('name','maximum');
+  assert(await page.locator('#reward-pose-preview [data-victory-pose="bow"]').count() === 1, 'Open pose preview survives other equipment changes');
+  await select('pose','dance');
+  assert(await page.locator('#reward-pose-preview [data-victory-pose="dance"]').count() === 1, 'An open pose preview tracks the selection');
+  await page.locator('[data-action="preview-achievement"][data-reward="gold"]').click();
+  await page.locator('[data-action="equip-achievement"]').click();
+  assert(await currentMode() === 'equipped', 'Equipping full set shows equipment');
+  assert(await has('.name-gold') === 1 && await has('.background-gold') === 1 && await has('.frame-gold') === 1, 'Full set preview matches all slots');
+  await page.locator('[data-action="reset-rewards"]').click();
+  assert(await has('.reward-background') === 0 && await has('.reward-frame') === 0 && await has('.reward-title') === 0, 'Reset clears visible cosmetics');
+  assert(await has('[class*="name-gold"]') === 0, 'Reset clears styled name');
+  assert(await page.locator('.achievement-stamp-preview strong').textContent() === 'None', 'Reset clears stamp preview');
+  await select('name','maximum'); await select('background','gold');
+  for (const width of [390,320]) {
+    await page.setViewportSize({width,height:900});
+    assert(await page.locator('#dialog').evaluate(el => el.scrollWidth <= el.clientWidth), 'Preview fits mobile width ' + width);
+    await select('frame','none');
+    assert(await has('.name-maximum') === 1 && await has('.reward-frame') === 0, 'Mobile controls update mixed equipment');
+  }
+  await page.reload(); await open();
+  assert(await currentMode() === 'equipped' && await has('.name-maximum') === 1 && await has('.background-gold') === 1, 'Reload previews saved combination');
+  assert(errors.length === 0, 'No browser errors: ' + errors.join(', '));
+  return 'Mixed equipment, locked previews, all slots, poses, clear/equip actions, reload, and mobile preview passed.';
+}

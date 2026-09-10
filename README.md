@@ -47,6 +47,33 @@ Open **Players → Dart armory** to preview every design and equip an earned dar
 
 The ladder doubles and caps at 50 wins. Existing completed wins count immediately, including solo matches; legs, losses, and unfinished games do not count. New milestones display an unlock notification. Undoing a victory or deleting a winning game recalculates eligibility; a selected design that becomes locked falls back to the best available design. Reduced-motion mode keeps the designs visible without animation.
 
+## Achievements and player rewards
+
+Open **Players → Achievements** to see progress, preview locked rewards, and equip earned ones. Each set includes a name style, lineup background, avatar frame, player title, and checkout stamp. Use **Equip appearance & stamp** for a coordinated set, or mix individual rewards in **Your equipment**. The throwing indicator and remaining score retain their normal colors.
+
+The preview opens on **Your equipment** and updates as you change individual slots, including clearing them. **Selected reward** previews the highlighted achievement's full set without changing equipment; editing a slot switches back to your equipped combination. The checkout stamp is shown below the lineup, and an open pose preview follows equipment changes.
+
+| Achievement | Unlock condition | Style | Additional pose |
+| --- | --- | --- | --- |
+| First Blood | Win one completed match | Classic gold | Trophy salute |
+| Maximum | Score 180 in a completed visit | Electric violet | Mic drop |
+| Bull Club | Hit 25 bullseyes in completed visits | Target mint | — |
+| Ice Cold | Check out 100+ in one visit | Frosted blue | Take a bow |
+| Comeback King | Win a leg after trailing by 100+ points within that leg | Phoenix ember | — |
+| Club Regular | Complete 50 matches, win or lose | Club silver | — |
+
+Existing saved games count immediately. Dart achievements use completed visits, including visits in unfinished or abandoned matches. Actual bullseyes in bust visits count; outer bulls and legacy totals without individual dart records do not count toward Bull Club. Legacy 180 visits and recorded 100+ checkouts can qualify. Comeback gaps are measured after completed visits, reset each leg, and only the first checkout wins the leg. Match milestones require a completed, non-abandoned match with all multiplayer places decided. Solo matches count except for Comeback King.
+
+**Medal shelf:** profiles display up to three pinned achievements. Until you choose your own pins, the first three earned sets are shown. Open a medal to see its earning date and a link to the original match. New visits record their completion time; older achievements show the match date. An explicitly empty shelf stays empty.
+
+**Checkout stamps:** equip a stamp before a checkout to attach your seal to that winning visit. Changing equipment later does not change existing stamps. Old visits without a recorded stamp remain unstamped.
+
+**Victory poses:** Auto matches an earned pose to the occasion: mic drop for a 180, bow for a 100+ checkout, and trophy salute for a match win. Choose a specific unlocked pose to use it for celebrations, or keep the classic dance. All poses retain the player's avatar and clothing. Reduced motion uses a still pose. There are no achievement-specific sounds.
+
+Equipment and pins save immediately and are included in exports. Unlocks are derived from match records, so undo or deleting a game can revoke eligibility. Ineligible cosmetics and medals are hidden, and poses fall back to the classic dance; saved preferences become active again if the reward is re-earned. Stamps are shown only while their achievement is eligible. Reloading or importing a backup recalculates progress without replaying unlock notifications.
+
+The original [achievement samples](achievements-preview.html) remain available in the footer as a separate, read-only design preview using sample players.
+
 ## Arcade feedback and accessibility
 
 The throwing player has an enlarged lineup card. After a completed three-dart visit of 26 points or fewer, or a bust, up to two standby players react with playful roast bubbles. On desktop, oversized comic bubbles burst into the board area; mobile layouts keep the phrases within wider player cards. Bubbles allow clicks through them. Checkouts and solo games are excluded. Bubbles clear on handover or undo; reduced-motion mode removes their entrance animation.
@@ -69,10 +96,14 @@ The lineup, Noob stat, and roast regression checks can be run with Node.js, Pyth
 
 ```powershell
 node tests/noob-stats-check.cjs
+node tests/achievements-check.cjs
 playwright-cli -s=oche-regression open http://127.0.0.1:8765/index.html
 playwright-cli -s=oche-regression run-code --filename=tests/playing-order-check.js
 playwright-cli -s=oche-regression run-code --filename=tests/lineup-drag-check.js
 playwright-cli -s=oche-regression run-code --filename=tests/standby-roast-check.js
+playwright-cli -s=oche-regression run-code --filename=tests/avatar-hair-check.js
+playwright-cli -s=oche-regression run-code --filename=tests/achievements-browser-check.js
+playwright-cli -s=oche-regression run-code --filename=tests/achievement-preview-check.js
 playwright-cli -s=oche-regression close
 ```
 
