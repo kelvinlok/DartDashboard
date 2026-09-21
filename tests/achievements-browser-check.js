@@ -58,7 +58,7 @@ async page => {
   assert(await page.locator('.checkout-stamp').count() === 0, 'Undo removes the checkout stamp');
   assert(await page.locator('.arcade-player .name-gold').count() === 0, 'Undo revokes ineligible appearance');
 
-  // Fixture with all six achievements and an unfinished solo visit.
+  // Fixture with all eight achievement tracks and an unfinished solo visit.
   const base = await saved(), profile = base.players[0];
   const visit = (total, extra={}) => ({total,darts:3,bust:false,double:false,...extra});
   let serial=0;
@@ -67,6 +67,7 @@ async page => {
   base.matches = Array.from({length:50},()=>game(soloPlayers,[180,121]));
   base.matches.push(game(base.players.map(p=>({id:p.id,name:p.name,avatar:p.avatar})),[0,180,180,0,121]));
   for(let i=0;i<25;i++) base.matches.push(game(soloPlayers,[visit(50,{darts:1,hits:['BULL'],double:true})],{abandoned:true}));
+  base.matches.push(game(soloPlayers,Array.from({length:6},()=>visit(6,{hits:['D1','D1','D1'],double:true})),{abandoned:true}));
   const active = game(soloPlayers,[],{pending:[]});base.matches.push(active);base.currentId=active.id;
   profile.name='Kelvin with a long player name';
   profile.rewards={name:'gold',background:'bull',frame:'maximum',title:'ice',stamp:'regular',pose:'bow',pins:['maximum','ice','regular']};
@@ -74,7 +75,7 @@ async page => {
   await page.reload();
   assert(await page.locator('.arcade-player .name-gold').count() === 1, 'Equipment survives reload');
   await openRewards();
-  assert((await page.locator('#dialog .dialog-body>p').first().textContent()).includes('6 of 6'), 'All six unlock from historical records');
+  assert((await page.locator('#dialog .dialog-body>p').first().textContent()).includes('8 of 8'), 'All eight tracks unlock from historical records');
   await page.locator('[data-action="preview-achievement"][data-reward="gold"]').click();
   await page.locator('[data-action="pin-achievement"]').click();
   assert((await saved()).players[0].rewards.pins.length===3, 'Shelf capped at three');

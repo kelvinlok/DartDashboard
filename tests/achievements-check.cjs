@@ -21,7 +21,7 @@ assert.deepEqual(keys(progress([match(1, [visit(180, { bust: true })])])), [], '
 const pending = match(1, [], { pending: ['BULL', 'BULL'] });
 assert.equal(progress([pending]).progress.bull, 0, 'Incomplete visits do not unlock');
 const bulls = Array.from({ length: 24 }, () => match(1, [visit(50, { darts: 1, hits: ['BULL'] })]));
-assert.equal(progress(bulls).earned.bull, undefined);
+assert.equal(progress(bulls).earned.bull.level, 3);
 bulls.push(match(1, [visit(25, { darts: 1, hits: ['25'] })]));
 assert.equal(progress(bulls).progress.bull, 24, 'Outer bulls do not count');
 bulls.push(match(1, [visit(50, { darts: 1 })]));
@@ -31,7 +31,7 @@ bulls.push(bullBust);
 assert.equal(progress(bulls).progress.bull, 25, 'Actual bullseyes count even when the visit busts');
 assert.equal(progress(bulls).earned.bull.matchId, bullBust.id);
 
-assert.equal(progress([match(2, [0, 99, 180, 0, 121])]).earned.comeback, undefined, '99 point gap is insufficient');
+assert.equal(progress([match(2, [0, 99, 180, 0, 121])]).earned.comeback.level, 3, '99 point gap earns Gold but not Master');
 assert.ok(progress([match(2, [0, 100, 180, 0, 121])]).earned.comeback, '100 point comeback qualifies');
 assert.ok(progress([match(2, [0, 180, 180, 0, 121])]).earned.comeback);
 assert.equal(progress([match(2, [180, 0, 121])]).earned.comeback, undefined, 'Leading win is not a comeback');
@@ -43,11 +43,11 @@ assert.equal(progress([abandoned]).progress.regular, 0);
 assert.ok(progress([abandoned]).earned.maximum, 'Recorded skill visits remain valid');
 
 const games = Array.from({ length: 49 }, () => match(1, [180, 121]));
-assert.equal(progress(games).earned.regular, undefined);
+assert.equal(progress(games).earned.regular.level, 3);
 games.push(match(1, [180, 121]));
 assert.ok(progress(games).earned.regular);
 games.pop();
-assert.equal(progress(games).earned.regular, undefined, 'Deletion revokes milestone');
+assert.equal(progress(games).earned.regular.level, 3, 'Deletion revokes Master but keeps Gold');
 const ranked = match(3, [180, 180, 0, 121, 121]);
 assert.equal(progress([ranked], '2').progress.regular, 1, 'Last place earns attendance');
 assert.equal(progress([ranked], '1').earned.gold, undefined, 'Only the match winner gets First Blood');

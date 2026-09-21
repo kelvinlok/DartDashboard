@@ -53,24 +53,34 @@ Open **Players → Achievements** to see progress, preview locked rewards, and e
 
 The preview opens on **Your equipment** and updates as you change individual slots, including clearing them. **Selected reward** previews the highlighted achievement's full set without changing equipment; editing a slot switches back to your equipped combination. The checkout stamp is shown below the lineup, and an open pose preview follows equipment changes.
 
-| Achievement | Unlock condition | Style | Additional pose |
-| --- | --- | --- | --- |
-| First Blood | Win one completed match | Classic gold | Trophy salute |
-| Maximum | Score 180 in a completed visit | Electric violet | Mic drop |
-| Bull Club | Hit 25 bullseyes in completed visits | Target mint | — |
-| Ice Cold | Check out 100+ in one visit | Frosted blue | Take a bow |
-| Comeback King | Win a leg after trailing by 100+ points within that leg | Phoenix ember | — |
-| Club Regular | Complete 50 matches, win or lose | Club silver | — |
+Every achievement has four levels: **Bronze → Silver → Gold → Master**. Reach Bronze to equip its full appearance set. Higher levels upgrade the medal, frame badge (I–IV), and title automatically. Each level retains its earning date and a link to its match. A strong performance can earn several levels at once. The picker shows your current level and the next target; live upgrades trigger a notification.
 
-Existing saved games count immediately. Dart achievements use completed visits, including visits in unfinished or abandoned matches. Actual bullseyes in bust visits count; outer bulls and legacy totals without individual dart records do not count toward Bull Club. Legacy 180 visits and recorded 100+ checkouts can qualify. Comeback gaps are measured after completed visits, reset each leg, and only the first checkout wins the leg. Match milestones require a completed, non-abandoned match with all multiplayer places decided. Solo matches count except for Comeback King.
+**In-game unlock reveal:** a newly earned level gets a large medal entrance, expanding light rings, sparks, and staggered achievement text in that reward's colors. The strongest new level leads, with simultaneous unlocks listed alongside it. After three seconds it settles into a compact notification. Automatic handover waits for the reveal and score celebration, then gives the next player the usual three-second countdown. View, dismiss, manual handover, and undo remain available; undo cancels the reveal immediately. Reduced motion shows a static compact notification. Reloading existing records does not replay the animation.
+
+| Achievement | Measure | Bronze | Silver | Gold | Master | Style |
+| --- | --- | --- | --- | --- | --- | --- |
+| First Blood | Completed match wins | 1 | 3 | 10 | 25 | Classic gold |
+| Maximum | Points in one completed, non-bust visit | 60 | 100 | 140 | 180 | Electric violet |
+| Bull Club | Total bullseyes | 1 | 5 | 10 | 25 | Target mint |
+| Ice Cold | Points in one checkout, in any finishing place | 40 | 60 | 80 | 100 | Frosted blue |
+| Comeback King | Points behind before winning that leg | 25 | 50 | 75 | 100 | Phoenix ember |
+| Club Regular | Completed matches, win or lose | 5 | 10 | 25 | 50 | Club silver |
+| Steady Hand | Consecutive clean three-dart visits in one leg | 3 | 4 | 5 | 6 | Sage |
+| Double Trouble | Total numbered double hits | 5 | 15 | 30 | 50 | Coral |
+
+For example, a 93-point checkout earns Ice Cold Gold; the next goal is a 100-point checkout for Master. Best-performance tracks use your highest qualifying performance, rather than adding separate visits together.
+
+Existing saved games count immediately. Dart achievements use completed visits, including visits in unfinished or abandoned matches. Actual bullseyes and numbered doubles in bust visits count. Outer bulls do not count as bullseyes, and bullseyes do not count toward Double Trouble. Bull Club, Double Trouble, and Steady Hand require individual dart records; recorded totals can qualify for Maximum and Ice Cold.
+
+Steady Hand tracks each player's own visits: other players' turns do not interrupt it, but a miss, bust, short visit, or visit without individual dart records breaks the run. Runs reset each leg and match. Comeback gaps are measured after completed visits and reset each leg; only the first checkout wins the leg. Match milestones require a completed, non-abandoned match with all multiplayer places decided. Solo matches count except for Comeback King.
 
 **Medal shelf:** profiles display up to three pinned achievements. Until you choose your own pins, the first three earned sets are shown. Open a medal to see its earning date and a link to the original match. New visits record their completion time; older achievements show the match date. An explicitly empty shelf stays empty.
 
 **Checkout stamps:** equip a stamp before a checkout to attach your seal to that winning visit. Changing equipment later does not change existing stamps. Old visits without a recorded stamp remain unstamped.
 
-**Victory poses:** Auto matches an earned pose to the occasion: mic drop for a 180, bow for a 100+ checkout, and trophy salute for a match win. Choose a specific unlocked pose to use it for celebrations, or keep the classic dance. All poses retain the player's avatar and clothing. Reduced motion uses a still pose. There are no achievement-specific sounds.
+**Victory poses:** First Blood Bronze unlocks the trophy salute, Maximum Master unlocks the mic drop, and Ice Cold Master unlocks the bow. Auto matches an earned pose to the occasion: mic drop for a 180, bow for a 100+ checkout, and trophy salute for a match win. Choose a specific unlocked pose to use it for celebrations, or keep the classic dance. All poses retain the player's avatar and clothing. Reduced motion uses a still pose. There are no achievement-specific sounds.
 
-Equipment and pins save immediately and are included in exports. Unlocks are derived from match records, so undo or deleting a game can revoke eligibility. Ineligible cosmetics and medals are hidden, and poses fall back to the classic dance; saved preferences become active again if the reward is re-earned. Stamps are shown only while their achievement is eligible. Reloading or importing a backup recalculates progress without replaying unlock notifications.
+Equipment and pins save immediately and are included in exports. Levels are derived from match records, so undo or deleting a game can lower a level or revoke eligibility. Equipment keeps the highest remaining level; if Bronze is lost, its cosmetics and medals are hidden. Ineligible poses fall back to the classic dance; saved preferences become active again if the required level is re-earned. Stamps are shown only while their achievement is eligible. Reloading or importing a backup recalculates progress without replaying notifications.
 
 The original [achievement samples](achievements-preview.html) remain available in the footer as a separate, read-only design preview using sample players.
 
@@ -97,12 +107,15 @@ The lineup, Noob stat, and roast regression checks can be run with Node.js, Pyth
 ```powershell
 node tests/noob-stats-check.cjs
 node tests/achievements-check.cjs
+node tests/achievement-levels-check.cjs
 playwright-cli -s=oche-regression open http://127.0.0.1:8765/index.html
 playwright-cli -s=oche-regression run-code --filename=tests/playing-order-check.js
 playwright-cli -s=oche-regression run-code --filename=tests/lineup-drag-check.js
 playwright-cli -s=oche-regression run-code --filename=tests/standby-roast-check.js
 playwright-cli -s=oche-regression run-code --filename=tests/avatar-hair-check.js
 playwright-cli -s=oche-regression run-code --filename=tests/achievements-browser-check.js
+playwright-cli -s=oche-regression run-code --filename=tests/achievement-levels-browser-check.js
+playwright-cli -s=oche-regression run-code --filename=tests/achievement-reveal-browser-check.js
 playwright-cli -s=oche-regression run-code --filename=tests/achievement-preview-check.js
 playwright-cli -s=oche-regression close
 ```
