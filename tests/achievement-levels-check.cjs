@@ -49,7 +49,7 @@ assert.equal(state([match([visit(50,{darts:1,hits:['BULL'],double:true}),visit(2
 assert.equal(state([match([visit(40,{double:true}),50])]).progress.doubles,0, 'Legacy totals cannot imply doubles');
 assert.equal(level([match([50])], 'bull'),0, 'Legacy totals cannot imply bullseyes');
 assert.equal(level([match([visit(25,{darts:1,hits:['25']})])], 'bull'),0, 'Outer bull does not qualify');
-assert.equal(state([match([180,119,visit(4,{darts:1,hits:['D2'],double:true,bust:true})])]).progress.doubles,1, 'Actual doubles in bust visits count');
+assert.equal(state([match([180,119,visit(4,{darts:1,hits:['D2'],double:true,bust:true})])]).progress.doubles,0, 'Doubles in bust visits do not count');
 
 const clean = () => visit(30,{hits:['S10','S10','S10']});
 for (const [count, expected] of [[2,0],[3,1],[4,2],[5,3],[6,4]]) {

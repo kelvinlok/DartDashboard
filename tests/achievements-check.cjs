@@ -28,8 +28,13 @@ bulls.push(match(1, [visit(50, { darts: 1 })]));
 assert.equal(progress(bulls).progress.bull, 24, 'Legacy totals cannot imply a bullseye');
 const bullBust = match(1, [180, 100, visit(50, { darts: 1, hits: ['BULL'], bust: true })]);
 bulls.push(bullBust);
-assert.equal(progress(bulls).progress.bull, 25, 'Actual bullseyes count even when the visit busts');
-assert.equal(progress(bulls).earned.bull.matchId, bullBust.id);
+assert.equal(progress(bulls).progress.bull, 24, 'Bullseyes in bust visits do not count');
+assert.equal(progress(bulls).earned.bull.level, 3, 'Bust cannot unlock Master');
+const validBull = match(1, [visit(50, { darts: 1, hits: ['BULL'] })]);
+bulls.push(validBull);
+assert.equal(progress(bulls).progress.bull, 25, 'The next valid bullseye completes the target');
+assert.equal(progress(bulls).earned.bull.level, 4);
+assert.equal(progress(bulls).earned.bull.matchId, validBull.id, 'Evidence points to a valid visit');
 
 assert.equal(progress([match(2, [0, 99, 180, 0, 121])]).earned.comeback.level, 3, '99 point gap earns Gold but not Master');
 assert.ok(progress([match(2, [0, 100, 180, 0, 121])]).earned.comeback, '100 point comeback qualifies');
